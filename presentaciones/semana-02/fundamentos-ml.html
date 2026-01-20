@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundamentos del Aprendizaje Automático - Semana 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #f5f5f7;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 80px 140px 80px;
+            background: #f5f5f7;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-header {
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 20px;
+            color: #6e6e73;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2d1b4e, #00d4ff);
+            border-radius: 10px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-box h3 {
+            font-size: 24px;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .content-box p {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .content-box li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-size: 20px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f0f2, #ffffff);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight-box p {
+            font-size: 17px;
+            color: #2d1b4e;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .key-point {
+            background: #ffffff;
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e5e7;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .key-point h4 {
+            color: #2d1b4e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .key-point p {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(45, 27, 78, 0.15);
+            border-color: #00d4ff;
+        }
+
+        .comparison-card h4 {
+            font-size: 19px;
+            color: #2d1b4e;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card p {
+            font-size: 14px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .four-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        strong {
+            color: #2d1b4e;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 50%, #ffffff 100%);
+            padding: 60px 80px 140px 80px;
+        }
+
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff, #2d1b4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cover-subtitle {
+            font-size: 32px;
+            color: #6e6e73;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .cover-info {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #6e6e73;
+            font-size: 16px;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .logo-area {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .logo-image {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .diagram-box {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+        .flow-arrow {
+            font-size: 28px;
+            color: #00d4ff;
+            margin: 0 10px;
+        }
+
+        .phase-card {
+            background: linear-gradient(135deg, #ffffff, #f8f8ff);
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #e5e5e7;
+            transition: all 0.3s ease;
+        }
+
+        .phase-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 212, 255, 0.2);
+        }
+
+        .phase-card h4 {
+            color: #2d1b4e;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .phase-card p {
+            font-size: 13px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px 140px 24px;
+            }
+
+            .slide-title {
+                font-size: 32px;
+            }
+
+            .slide-subtitle {
+                font-size: 16px;
+            }
+
+            .cover-title {
+                font-size: 42px;
+            }
+
+            .cover-subtitle {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stats-grid,
+            .two-columns,
+            .three-columns,
+            .four-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-area">
+        <img src="../../assets/images/logo-ulacit.png" alt="ULACIT" class="logo-image">
+    </div>
+
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">21</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Portada -->
+        <div class="slide cover-slide active">
+            <h1 class="cover-title">Fundamentos del aprendizaje automático</h1>
+            <p class="cover-subtitle">Semana 2: De datos a decisiones inteligentes</p>
+            <div class="cover-info">
+                <p>Microcredencial en Inteligencia Artificial y Análisis de Datos<br>
+                Universidad Latinoamericana de Ciencia y Tecnología<br>
+                Enero 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Agenda de la sesión</h2>
+                <p class="slide-subtitle">El motor detrás de la revolución de la IA</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">$113.1B</div>
+                        <div class="label">mercado global de ML en 2025</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$503.4B</div>
+                        <div class="label">proyección para 2030</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">34.8%</div>
+                        <div class="label">tasa de crecimiento anual</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 30px;">
+                    <h3>Contenidos que exploraremos hoy</h3>
+                    <ul>
+                        <li>Conceptos básicos del Machine Learning</li>
+                        <li>Tipos de aprendizaje: supervisado, no supervisado, semi-supervisado y por refuerzo</li>
+                        <li>El ciclo de vida de un proyecto de ML</li>
+                        <li>Demostración práctica con Google Teachable Machine</li>
+                        <li>Caso práctico: aplicación real de ML en negocios</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Hoy aprenderán a entrenar su primer modelo de ML sin escribir una sola línea de código.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Qué es ML -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Qué es Machine Learning</h2>
+                <p class="slide-subtitle">La diferencia entre programar reglas y aprender patrones</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Definición fundacional (Arthur Samuel, 1959)</h4>
+                    <p>"El campo de estudio que permite a las computadoras <strong>aprender sin ser programadas explícitamente</strong>."</p>
+                </div>
+
+                <div class="key-point">
+                    <h4>Definición operativa (IBM, 2026)</h4>
+                    <p>"Subconjunto de la IA enfocado en algoritmos que pueden <strong>'aprender' patrones de datos de entrenamiento</strong> y, posteriormente, hacer <strong>inferencias precisas</strong> sobre datos nuevos."</p>
+                </div>
+
+                <div class="key-point">
+                    <h4>Definición formal (Tom Mitchell)</h4>
+                    <p>"Un programa aprende de la <strong>experiencia E</strong> con respecto a alguna <strong>tarea T</strong> y <strong>medida de rendimiento P</strong>, si su rendimiento en T, medido por P, <strong>mejora con E</strong>."</p>
+                </div>
+
+                <div class="highlight-box">
+                    <p>El concepto clave: <strong>GENERALIZACIÓN</strong> — la capacidad de traducir buen rendimiento en datos de entrenamiento hacia resultados útiles en escenarios del mundo real.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Programación tradicional vs ML -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Programación tradicional vs. Machine Learning</h2>
+                <p class="slide-subtitle">Un cambio fundamental de paradigma</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>Programación tradicional</h4>
+                        <p style="margin-top: 10px;"><strong>Entrada:</strong> Datos + Reglas explícitas</p>
+                        <p><strong>Proceso:</strong> Programador escribe instrucciones paso a paso</p>
+                        <p><strong>Salida:</strong> Resultados predecibles</p>
+                        <p style="margin-top: 10px;"><strong>Ejemplo:</strong> Si temperatura > 30°C entonces "Hace calor"</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Machine Learning</h4>
+                        <p style="margin-top: 10px;"><strong>Entrada:</strong> Datos + Resultados esperados</p>
+                        <p><strong>Proceso:</strong> Algoritmo descubre patrones automáticamente</p>
+                        <p><strong>Salida:</strong> Modelo que generaliza</p>
+                        <p style="margin-top: 10px;"><strong>Ejemplo:</strong> Aprender qué significa "calor" analizando miles de ejemplos</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Por qué ML es revolucionario</h3>
+                    <ul>
+                        <li><strong>"Es mucho más fácil recolectar datos que recolectar comprensión"</strong> — MIT Sloan</li>
+                        <li>Maneja problemas demasiado complejos para reglas explícitas</li>
+                        <li>Se adapta automáticamente a nuevos patrones sin reprogramación</li>
+                        <li>Descubre relaciones que los humanos no pueden percibir</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>ML no reemplaza la experiencia humana — la <strong>aumenta</strong> procesando volúmenes de datos imposibles para análisis manual.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Tipos de aprendizaje - Overview -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Los cuatro tipos principales de aprendizaje</h2>
+                <p class="slide-subtitle">Cada uno resuelve problemas diferentes</p>
+            </div>
+            <div class="slide-content">
+                <div class="four-columns">
+                    <div class="comparison-card">
+                        <h4>Supervisado</h4>
+                        <p style="margin-top: 10px;"><strong>Datos etiquetados</strong></p>
+                        <p>Aprender de ejemplos con respuestas correctas</p>
+                        <p style="margin-top: 8px; font-weight: 600; color: #00d4ff;">El más usado en empresas</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>No supervisado</h4>
+                        <p style="margin-top: 10px;"><strong>Datos sin etiquetas</strong></p>
+                        <p>Descubrir patrones ocultos automáticamente</p>
+                        <p style="margin-top: 8px; font-weight: 600; color: #00d4ff;">Para exploración</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Semi-supervisado</h4>
+                        <p style="margin-top: 10px;"><strong>Pocos datos etiquetados</strong></p>
+                        <p>Combina lo mejor de ambos mundos</p>
+                        <p style="margin-top: 8px; font-weight: 600; color: #00d4ff;">Cuando etiquetar es caro</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Por refuerzo</h4>
+                        <p style="margin-top: 10px;"><strong>Aprender por prueba y error</strong></p>
+                        <p>Maximizar recompensas a largo plazo</p>
+                        <p style="margin-top: 8px; font-weight: 600; color: #00d4ff;">Robótica, juegos, LLMs</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">70%</div>
+                        <div class="label">de aplicaciones empresariales usan aprendizaje supervisado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">2025</div>
+                        <div class="label">fue el "año del razonamiento y RLVR"</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$5M</div>
+                        <div class="label">costo estimado de entrenar DeepSeek R1 con RL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Aprendizaje supervisado -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aprendizaje supervisado</h2>
+                <p class="slide-subtitle">Aprender de ejemplos con respuestas correctas</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>Se proporcionan <strong>datos de entrenamiento etiquetados</strong> (entrada + salida correcta). El algoritmo aprende la relación entre entradas y salidas para predecir correctamente en datos nuevos.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Clasificación</h3>
+                        <p><strong>Predice categorías discretas</strong></p>
+                        <ul style="margin-top: 10px;">
+                            <li>¿Es spam o no spam?</li>
+                            <li>¿Qué dígito es esta imagen?</li>
+                            <li>¿Aprobará o no el crédito?</li>
+                            <li>¿Qué enfermedad tiene el paciente?</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Algoritmos:</strong> Regresión logística, árboles de decisión, Random Forest, k-NN, SVM</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Regresión</h3>
+                        <p><strong>Predice valores numéricos continuos</strong></p>
+                        <ul style="margin-top: 10px;">
+                            <li>¿Cuál será el precio de la vivienda?</li>
+                            <li>¿Cuántas ventas tendremos?</li>
+                            <li>¿Qué temperatura habrá mañana?</li>
+                            <li>¿Cuál es el valor de vida del cliente?</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Algoritmos:</strong> Regresión lineal, regresión polinomial, XGBoost, LightGBM</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>2024-2025:</strong> Los algoritmos de Gradient Boosting (XGBoost, LightGBM) dominan en datos tabulares. Transformers comienzan a aplicarse exitosamente en datasets estructurados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Aprendizaje no supervisado -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aprendizaje no supervisado</h2>
+                <p class="slide-subtitle">Descubrir patrones ocultos en datos sin etiquetas</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>Se proporcionan <strong>datos sin etiquetas</strong>. El algoritmo busca patrones, agrupaciones o estructuras ocultas automáticamente, sin saber de antemano qué buscar.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Clustering (agrupamiento)</h3>
+                        <p><strong>Agrupar datos similares</strong></p>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>K-Means:</strong> crea K grupos basados en similitud</li>
+                            <li><strong>DBSCAN:</strong> encuentra grupos de densidad variable</li>
+                            <li><strong>Clustering jerárquico:</strong> crea jerarquías de grupos</li>
+                        </ul>
+                        <p style="margin-top: 12px;"><strong>Aplicaciones:</strong></p>
+                        <ul>
+                            <li>Segmentación de clientes</li>
+                            <li>Detección de anomalías</li>
+                            <li>Organización de documentos</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Reducción de dimensionalidad</h3>
+                        <p><strong>Simplificar datos complejos</strong></p>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>PCA:</strong> análisis de componentes principales</li>
+                            <li><strong>t-SNE:</strong> visualización de datos complejos</li>
+                            <li><strong>Autoencoders:</strong> compresión con deep learning</li>
+                        </ul>
+                        <p style="margin-top: 12px;"><strong>Aplicaciones:</strong></p>
+                        <ul>
+                            <li>Visualización de datos</li>
+                            <li>Compresión de información</li>
+                            <li>Eliminación de ruido</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>2025:</strong> Deep Clustering integra autoencoders y técnicas generativas (VAE, GAN) con clustering tradicional para resultados superiores.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Aprendizaje semi-supervisado -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aprendizaje semi-supervisado</h2>
+                <p class="slide-subtitle">Cuando etiquetar datos es costoso</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>El problema que resuelve</h4>
+                    <p>Etiquetar datos manualmente es <strong>caro y requiere mucho tiempo</strong>. El aprendizaje semi-supervisado usa <strong>pequeñas cantidades de datos etiquetados + grandes cantidades de datos sin etiquetar</strong> para entrenar modelos efectivos.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">10-15%</div>
+                        <div class="label">del rendimiento supervisado con dramáticamente menos etiquetas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">FreeMatch</div>
+                        <div class="label">algoritmo líder en 2025 con umbrales auto-adaptativos</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Casos de uso principales</h3>
+                        <ul>
+                            <li><strong>Imágenes médicas:</strong> solo algunas radiografías etiquetadas por expertos</li>
+                            <li><strong>Reconocimiento de voz:</strong> pocas transcripciones, mucho audio</li>
+                            <li><strong>Moderación de contenido:</strong> etiquetado humano limitado</li>
+                            <li><strong>Detección de fraude:</strong> pocos casos confirmados, muchas transacciones</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Técnicas modernas (2025)</h3>
+                        <ul>
+                            <li><strong>Pseudo-etiquetado:</strong> modelo genera etiquetas para datos no etiquetados</li>
+                            <li><strong>Consistency regularization:</strong> predicciones consistentes ante perturbaciones</li>
+                            <li><strong>MixMatch y FixMatch:</strong> combinan múltiples técnicas</li>
+                            <li><strong>FreeMatch:</strong> elimina umbrales fijos con adaptación dinámica</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p>El semi-supervisado es ideal cuando tienes <strong>acceso fácil a datos pero etiquetar es prohibitivamente costoso</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Aprendizaje por refuerzo -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aprendizaje por refuerzo</h2>
+                <p class="slide-subtitle">Aprender mediante prueba, error y recompensas</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>Un <strong>agente</strong> interactúa con un <strong>entorno</strong>, toma <strong>acciones</strong>, recibe <strong>recompensas</strong> (positivas o negativas), y aprende a <strong>maximizar recompensas acumuladas</strong> a largo plazo mediante prueba y error.</p>
+                </div>
+
+                <div class="diagram-box">
+                    <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;">
+                        <div class="phase-card" style="width: 150px;">
+                            <h4>Agente</h4>
+                            <p>Toma decisiones</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 150px;">
+                            <h4>Acción</h4>
+                            <p>Ejecuta movimiento</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 150px;">
+                            <h4>Entorno</h4>
+                            <p>Cambia de estado</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 150px;">
+                            <h4>Recompensa</h4>
+                            <p>Feedback positivo/negativo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Aplicaciones revolucionarias</h3>
+                        <ul>
+                            <li><strong>AlphaFold 3:</strong> predicción de estructuras de proteínas</li>
+                            <li><strong>Vehículos autónomos:</strong> navegación y toma de decisiones</li>
+                            <li><strong>Robótica:</strong> manipulación de objetos, locomoción</li>
+                            <li><strong>Finanzas:</strong> trading algorítmico</li>
+                            <li><strong>LLMs:</strong> ChatGPT usa RLHF para alineación</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Avances 2025: RLVR</h3>
+                        <p><strong>Reinforcement Learning with Verifiable Rewards</strong></p>
+                        <ul>
+                            <li>DeepSeek R1 (enero 2025)</li>
+                            <li>Usa verificadores determinísticos</li>
+                            <li>Recompensas basadas en corrección</li>
+                            <li>Sin etiquetado humano costoso</li>
+                            <li>Costo: ~$5M (vs. estimados previos mucho mayores)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>2025 fue "el año del razonamiento y RLVR"</strong> — modelos como DeepSeek R1 demuestran pensamiento paso a paso comparable a o1 de OpenAI.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Self-supervised learning -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Self-supervised learning: el paradigma emergente</h2>
+                <p class="slide-subtitle">Cómo se entrenan los foundation models</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es y por qué importa</h4>
+                    <p>El modelo aprende <strong>prediciendo partes ocultas de los datos</strong> sin etiquetas manuales. Crea sus propias "etiquetas" a partir de la estructura de los datos. <strong>Es el paradigma dominante en ML moderno</strong>, impulsando foundation models como GPT, BERT, Claude.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">DINOv3</div>
+                        <div class="label">primer modelo SSL que supera supervisados débiles (Meta, 2025)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">GPT-4</div>
+                        <div class="label">entrenado prediciendo siguiente palabra en trillones de tokens</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Cómo funciona en NLP</h3>
+                        <p><strong>Masked Language Modeling:</strong></p>
+                        <p style="margin-top: 8px;">Entrada: "El gato está en la [MASK]"<br>
+                        Tarea: predecir la palabra oculta<br>
+                        El modelo aprende contexto sin etiquetas</p>
+                        <p style="margin-top: 12px;"><strong>Next Token Prediction:</strong></p>
+                        <p style="margin-top: 8px;">Entrada: "La inteligencia artificial"<br>
+                        Tarea: predecir siguiente palabra<br>
+                        Base del entrenamiento de GPT</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Cómo funciona en visión</h3>
+                        <p><strong>Contrastive Learning:</strong></p>
+                        <p style="margin-top: 8px;">Compara versiones aumentadas de la misma imagen<br>
+                        Aprende representaciones sin etiquetas</p>
+                        <p style="margin-top: 12px;"><strong>Vision Transformers (DINOv3):</strong></p>
+                        <p style="margin-top: 8px;">Predice partes ocultas de imágenes<br>
+                        Resultado: características visuales transferibles</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Self-supervised learning permite entrenar con <strong>cantidades masivas de datos no etiquetados</strong>, desbloqueando el potencial de modelos con miles de millones de parámetros.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Ciclo de vida - Overview -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">El ciclo de vida de un proyecto de ML</h2>
+                <p class="slide-subtitle">De la idea al despliegue en producción</p>
+            </div>
+            <div class="slide-content">
+                <div class="diagram-box">
+                    <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px;">
+                        <div class="phase-card" style="width: 180px;">
+                            <h4>1. Datos</h4>
+                            <p>Recolección, limpieza, exploración</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 180px;">
+                            <h4>2. Entrenamiento</h4>
+                            <p>Selección de modelo, ajuste</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 180px;">
+                            <h4>3. Evaluación</h4>
+                            <p>Métricas, validación</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 180px;">
+                            <h4>4. Despliegue</h4>
+                            <p>Producción, monitoreo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 25px;">
+                    <div class="stat-card">
+                        <div class="number">60-70%</div>
+                        <div class="label">del tiempo total se invierte en preparación de datos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">87%</div>
+                        <div class="label">de proyectos ML nunca llegan a producción</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">MLOps</div>
+                        <div class="label">disciplina crítica para despliegue exitoso</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La calidad de los datos es <strong>más importante que la complejidad del modelo</strong>. "Basura entra, basura sale" aplica 100% en ML.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Fase de datos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Fase de datos: la base de todo proyecto de ML</h2>
+                <p class="slide-subtitle">Recolección, limpieza y exploración</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p><strong>Calidad sobre cantidad.</strong> Datos representativos que capturen escenarios de negocio reales son más valiosos que datasets masivos con ruido o sesgos.</p>
+                </div>
+
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Recolección</h4>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>Identificar fuentes</li>
+                            <li>Definir estrategia</li>
+                            <li>APIs, web scraping, sensores</li>
+                            <li>Bases de datos internas</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Limpieza</h4>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>Valores faltantes</li>
+                            <li>Duplicados</li>
+                            <li>Outliers</li>
+                            <li>Inconsistencias</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Exploración (EDA)</h4>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>Distribuciones</li>
+                            <li>Correlaciones</li>
+                            <li>Visualizaciones</li>
+                            <li>Patrones iniciales</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Herramientas clave (2026)</h3>
+                    <ul>
+                        <li><strong>Pandas:</strong> estándar de facto para manipulación de datos en Python</li>
+                        <li><strong>Polars:</strong> 7.7x más rápido que Pandas para CSVs grandes, evaluación lazy</li>
+                        <li><strong>DuckDB:</strong> analítica SQL-nativa, 2-6x más rápido que Spark</li>
+                        <li><strong>DVC (Data Version Control):</strong> seguimiento de cambios en datasets</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>60-70% del tiempo total</strong> del proyecto se consume en esta fase. Es la inversión más importante.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Fase de entrenamiento -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Fase de entrenamiento: construyendo el modelo</h2>
+                <p class="slide-subtitle">Frameworks, algoritmos y optimización</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Frameworks dominantes (2026)</h3>
+                        <ul>
+                            <li><strong>PyTorch:</strong> líder en investigación y producción</li>
+                            <li><strong>TensorFlow:</strong> fuerte en despliegue enterprise</li>
+                            <li><strong>Scikit-learn:</strong> esencial para ML clásico</li>
+                            <li><strong>Hugging Face:</strong> estándar para transformers</li>
+                            <li><strong>JAX:</strong> crecimiento rápido en ML de alto rendimiento</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Mejores prácticas</h3>
+                        <ul>
+                            <li><strong>Comenzar simple:</strong> baseline antes de complejidad</li>
+                            <li><strong>Transfer learning:</strong> aprovechar modelos pre-entrenados</li>
+                            <li><strong>Feature engineering:</strong> reduce tiempo 40-60%</li>
+                            <li><strong>Validación cruzada:</strong> evitar overfitting</li>
+                            <li><strong>Tracking de experimentos:</strong> MLflow, W&B, Neptune</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Hiperparámetros a optimizar</h3>
+                    <ul>
+                        <li><strong>Learning rate:</strong> velocidad de aprendizaje</li>
+                        <li><strong>Batch size:</strong> cantidad de ejemplos por iteración</li>
+                        <li><strong>Número de epochs:</strong> cuántas veces se ve todo el dataset</li>
+                        <li><strong>Arquitectura:</strong> capas, neuronas, funciones de activación</li>
+                        <li><strong>Regularización:</strong> dropout, weight decay para prevenir overfitting</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Herramientas AutoML (Google Vertex AI, H2O.ai, DataRobot) pueden automatizar selección de modelos y optimización de hiperparámetros.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Fase de evaluación -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Fase de evaluación: midiendo el éxito</h2>
+                <p class="slide-subtitle">Métricas y validación rigurosa</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Métricas de clasificación</h3>
+                        <ul>
+                            <li><strong>Accuracy:</strong> % de predicciones correctas</li>
+                            <li><strong>Precision:</strong> de los positivos predichos, cuántos son correctos</li>
+                            <li><strong>Recall:</strong> de los positivos reales, cuántos detectamos</li>
+                            <li><strong>F1-Score:</strong> balance entre precision y recall</li>
+                            <li><strong>AUC-ROC:</strong> capacidad de discriminación</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Métricas de regresión</h3>
+                        <ul>
+                            <li><strong>MAE:</strong> error absoluto medio</li>
+                            <li><strong>RMSE:</strong> raíz del error cuadrático medio</li>
+                            <li><strong>R²:</strong> proporción de varianza explicada</li>
+                            <li><strong>MAPE:</strong> error porcentual absoluto medio</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Estrategias de validación</h4>
+                    <p><strong>Train/Validation/Test split:</strong> típicamente 70%/15%/15%</p>
+                    <p><strong>Validación cruzada k-fold:</strong> divide datos en k partes, entrena k veces</p>
+                    <p><strong>Validación temporal:</strong> para series de tiempo, respetar orden cronológico</p>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>Crítico:</strong> Las métricas deben alinearse con <strong>objetivos de negocio</strong>. Un modelo con 95% accuracy puede ser inútil si falla en los casos que más importan.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Fase de despliegue y MLOps -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Fase de despliegue: de notebook a producción</h2>
+                <p class="slide-subtitle">MLOps y la brecha que separa éxito de fracaso</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">87%</div>
+                        <div class="label">de modelos ML nunca llegan a producción</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">70%</div>
+                        <div class="label">de organizaciones invierten en MLOps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">55%</div>
+                        <div class="label">citan falta de MLOps como obstáculo principal</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Componentes de despliegue</h3>
+                        <ul>
+                            <li><strong>Containerización:</strong> Docker para portabilidad</li>
+                            <li><strong>Orquestación:</strong> Kubernetes para escalabilidad</li>
+                            <li><strong>CI/CD:</strong> automatización de pruebas y despliegue</li>
+                            <li><strong>Monitoreo:</strong> detectar degradación del modelo</li>
+                            <li><strong>A/B testing:</strong> validar mejoras con usuarios reales</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Herramientas de serving</h3>
+                        <ul>
+                            <li><strong>TensorFlow Serving:</strong> modelos TensorFlow</li>
+                            <li><strong>TorchServe:</strong> modelos PyTorch</li>
+                            <li><strong>NVIDIA Triton:</strong> optimización GPU multi-framework</li>
+                            <li><strong>BentoML:</strong> despliegue rápido y fácil</li>
+                            <li><strong>MLflow:</strong> gestión end-to-end del ciclo de vida</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>MLOps es a ML lo que DevOps es a software.</strong> Sin procesos robustos, incluso los mejores modelos fallan en producción.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Google Teachable Machine - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Google Teachable Machine</h2>
+                <p class="slide-subtitle">Entrena modelos de ML sin escribir código</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es Teachable Machine</h4>
+                    <p>Plataforma web <strong>100% gratuita</strong> de Google que permite a cualquier persona entrenar modelos de Machine Learning directamente en el navegador, <strong>sin programación ni instalación</strong>.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">182K+</div>
+                        <div class="label">usuarios globales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">100%</div>
+                        <div class="label">basado en navegador</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">0$</div>
+                        <div class="label">completamente gratis, siempre</div>
+                    </div>
+                </div>
+
+                <div class="three-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Clasificación de imágenes</h4>
+                        <p style="margin-top: 10px;">Entrena modelos para reconocer objetos, gestos o patrones visuales</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Clasificación de audio</h4>
+                        <p style="margin-top: 10px;">Detecta sonidos, palabras habladas o patrones de audio</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Clasificación de pose</h4>
+                        <p style="margin-top: 10px;">Reconoce posiciones y movimientos corporales</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>URL:</strong> https://teachablemachine.withgoogle.com/<br>
+                    Usado en Stanford, NYU, MIT Media Lab. Ningún dato sale del navegador (privacidad garantizada).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Teachable Machine - Cómo funciona -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Cómo funciona Teachable Machine</h2>
+                <p class="slide-subtitle">Del concepto al modelo en minutos</p>
+            </div>
+            <div class="slide-content">
+                <div class="diagram-box">
+                    <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px;">
+                        <div class="phase-card" style="width: 200px;">
+                            <h4>1. Crear clases</h4>
+                            <p>Define las categorías a clasificar</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 200px;">
+                            <h4>2. Recolectar datos</h4>
+                            <p>Webcam o archivos (20-50 ejemplos/clase)</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 200px;">
+                            <h4>3. Entrenar modelo</h4>
+                            <p>Transfer learning sobre MobileNet</p>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="phase-card" style="width: 200px;">
+                            <h4>4. Probar y exportar</h4>
+                            <p>Validar y descargar modelo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 25px;">
+                    <div class="content-box">
+                        <h3>Tecnología subyacente</h3>
+                        <ul>
+                            <li><strong>Transfer learning:</strong> usa MobileNet pre-entrenado</li>
+                            <li><strong>Entrenamiento local:</strong> todo ocurre en el navegador</li>
+                            <li><strong>TensorFlow.js:</strong> ML en JavaScript</li>
+                            <li><strong>No requiere GPU:</strong> funciona en cualquier computadora</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Opciones de exportación</h3>
+                        <ul>
+                            <li><strong>TensorFlow.js:</strong> para sitios web</li>
+                            <li><strong>TensorFlow Lite:</strong> para apps móviles</li>
+                            <li><strong>Keras:</strong> para proyectos Python</li>
+                            <li><strong>Cloud hosting:</strong> URL compartible alojada por Google</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Ideal para <strong>prototipos rápidos, educación y demostraciones</strong>. Los modelos son simples pero efectivos para aprender conceptos de ML.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Demostración en vivo -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Demostración en vivo</h2>
+                <p class="slide-subtitle">Entrenaremos un clasificador de imágenes juntos</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3>Proyecto de demostración: Clasificador de gestos con manos</h3>
+                    <p>Crearemos un modelo que reconozca 3 gestos diferentes con las manos en tiempo real.</p>
+                </div>
+
+                <div class="three-columns" style="margin-top: 20px;">
+                    <div class="phase-card">
+                        <h4>Clase 1: Pulgar arriba</h4>
+                        <p style="margin-top: 8px;">Capturaremos ~30 imágenes del gesto de aprobación</p>
+                    </div>
+
+                    <div class="phase-card">
+                        <h4>Clase 2: Pulgar abajo</h4>
+                        <p style="margin-top: 8px;">Capturaremos ~30 imágenes del gesto de desaprobación</p>
+                    </div>
+
+                    <div class="phase-card">
+                        <h4>Clase 3: Puño cerrado</h4>
+                        <p style="margin-top: 8px;">Capturaremos ~30 imágenes de la mano cerrada</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Pasos que seguiremos</h3>
+                    <ul>
+                        <li>Acceder a https://teachablemachine.withgoogle.com/train/image</li>
+                        <li>Crear las 3 clases y nombrarlas</li>
+                        <li>Capturar datos de entrenamiento con la webcam desde diferentes ángulos</li>
+                        <li>Entrenar el modelo (toma ~1-2 minutos)</li>
+                        <li>Probar el modelo en tiempo real</li>
+                        <li>Observar la precisión y porcentajes de confianza</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>Objetivo:</strong> Demostrar que pueden entrenar un modelo de ML funcional en <strong>menos de 5 minutos</strong> sin escribir código.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Aplicaciones prácticas de lo aprendido -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones prácticas en negocios</h2>
+                <p class="slide-subtitle">Cómo aplicar estos conceptos en el mundo real</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Control de calidad visual</h3>
+                        <ul>
+                            <li><strong>Manufactura:</strong> detectar productos defectuosos</li>
+                            <li><strong>Agricultura:</strong> clasificar frutas por madurez</li>
+                            <li><strong>Retail:</strong> verificar productos en estantes</li>
+                            <li><strong>Técnica:</strong> aprendizaje supervisado con clasificación de imágenes</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Segmentación de clientes</h3>
+                        <ul>
+                            <li><strong>Marketing:</strong> identificar grupos de clientes similares</li>
+                            <li><strong>Retail:</strong> personalizar ofertas y promociones</li>
+                            <li><strong>E-commerce:</strong> recomendaciones de productos</li>
+                            <li><strong>Técnica:</strong> aprendizaje no supervisado con clustering</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Predicción de demanda</h3>
+                        <ul>
+                            <li><strong>Retail:</strong> optimización de inventario</li>
+                            <li><strong>Manufactura:</strong> planificación de producción</li>
+                            <li><strong>Logística:</strong> asignación de recursos</li>
+                            <li><strong>Técnica:</strong> aprendizaje supervisado con regresión</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Detección de fraude</h3>
+                        <ul>
+                            <li><strong>Finanzas:</strong> transacciones sospechosas</li>
+                            <li><strong>E-commerce:</strong> compras fraudulentas</li>
+                            <li><strong>Seguros:</strong> reclamaciones anómalas</li>
+                            <li><strong>Técnica:</strong> clasificación + detección de anomalías</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La clave del éxito: <strong>identificar problemas de negocio</strong> que se pueden traducir en tareas de predicción (clasificación/regresión) o descubrimiento de patrones (clustering).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Conclusión y transición al caso -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Preparados para el caso práctico</h2>
+                <p class="slide-subtitle">Aplicando Machine Learning a un problema real de negocios</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Lo que hemos aprendido hoy</h4>
+                    <p>✓ Qué es Machine Learning y cómo difiere de programación tradicional<br>
+                    ✓ Los cuatro tipos de aprendizaje y cuándo usar cada uno<br>
+                    ✓ El ciclo de vida completo de un proyecto de ML<br>
+                    ✓ Cómo entrenar un modelo sin código usando Teachable Machine</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Herramientas que dominan ahora</h3>
+                    <ul>
+                        <li><strong>Google Teachable Machine:</strong> entrenar modelos de clasificación</li>
+                        <li><strong>Conceptos de aprendizaje supervisado:</strong> clasificación con datos etiquetados</li>
+                        <li><strong>Evaluación de modelos:</strong> precisión y confianza de predicciones</li>
+                        <li><strong>Pensamiento crítico:</strong> limitaciones y próximos pasos</li>
+                    </ul>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">$3.70</div>
+                        <div class="label">retorno por cada dólar invertido en ML bien implementado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">40-60%</div>
+                        <div class="label">reducción en tiempo con feature engineering adecuado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">70%</div>
+                        <div class="label">de aplicaciones empresariales usan supervisado</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p style="text-align: center; font-size: 1.4em;">Ahora aplicarán todo lo aprendido en un <strong>caso práctico real</strong> donde resolverán un problema de negocio usando Machine Learning.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
