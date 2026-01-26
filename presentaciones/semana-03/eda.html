@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparación y Exploración de Datos - Semana 3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #f5f5f7;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 80px 140px 80px;
+            background: #f5f5f7;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-header {
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 20px;
+            color: #6e6e73;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2d1b4e, #00d4ff);
+            border-radius: 10px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-box h3 {
+            font-size: 24px;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .content-box p {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .content-box li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-size: 20px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f0f2, #ffffff);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight-box p {
+            font-size: 17px;
+            color: #2d1b4e;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .key-point {
+            background: #ffffff;
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e5e7;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .key-point h4 {
+            color: #2d1b4e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .key-point p {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(45, 27, 78, 0.15);
+            border-color: #00d4ff;
+        }
+
+        .comparison-card h4 {
+            font-size: 19px;
+            color: #2d1b4e;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card p {
+            font-size: 14px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .four-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        strong {
+            color: #2d1b4e;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 50%, #ffffff 100%);
+            padding: 60px 80px 140px 80px;
+        }
+
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff, #2d1b4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cover-subtitle {
+            font-size: 32px;
+            color: #6e6e73;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .cover-info {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #6e6e73;
+            font-size: 16px;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .logo-area {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .logo-image {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d1b4e, #00d4ff);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        tr:hover {
+            background: #f8f8ff;
+        }
+
+        .code-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .code-box code {
+            color: #9cdcfe;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px 140px 24px;
+            }
+
+            .slide-title {
+                font-size: 32px;
+            }
+
+            .slide-subtitle {
+                font-size: 16px;
+            }
+
+            .cover-title {
+                font-size: 42px;
+            }
+
+            .cover-subtitle {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stats-grid,
+            .two-columns,
+            .three-columns,
+            .four-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">23</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Portada -->
+        <div class="slide cover-slide active">
+            <h1 class="cover-title">Preparación y exploración de datos</h1>
+            <p class="cover-subtitle">Semana 3: El fundamento del éxito en ML</p>
+            <div class="cover-info">
+                <p>Microcredencial en Inteligencia Artificial y Análisis de Datos<br>
+                Universidad Latinoamericana de Ciencia y Tecnología<br>
+                Enero 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Agenda de la sesión</h2>
+                <p class="slide-subtitle">La fase más crítica de cualquier proyecto de ML</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">60-70%</div>
+                        <div class="label">del tiempo en proyectos ML se invierte en datos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$12.9M</div>
+                        <div class="label">pierden las empresas anualmente por mala calidad de datos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">80%</div>
+                        <div class="label">de proyectos de IA fracasan por problemas de datos</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 30px;">
+                    <h3>Lo que aprenderemos hoy</h3>
+                    <ul>
+                        <li>Por qué la calidad de datos define el éxito o fracaso de proyectos de IA</li>
+                        <li>Técnicas de preprocesamiento: limpieza, normalización y encoding</li>
+                        <li>Análisis exploratorio de datos (EDA) y su rol estratégico</li>
+                        <li>Visualización de datos para comunicar insights</li>
+                        <li>Demostración práctica con Google Colab y Gemini</li>
+                        <li>Caso práctico aplicado a un problema real de negocios</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Hoy dominarán las habilidades más valiosas en ciencia de datos: limpiar, explorar y visualizar datos para tomar mejores decisiones.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Por qué la calidad de datos es crítica -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Por qué la calidad de datos define el éxito</h2>
+                <p class="slide-subtitle">Estadísticas que todo líder de negocios debe conocer</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>La realidad contundente</h4>
+                    <p>El panorama actual de proyectos de IA revela que <strong>la tecnología no es el problema principal — los datos lo son</strong>. La calidad de datos determina el éxito o fracaso del 80% de los proyectos de IA, más que cualquier algoritmo o tecnología.</p>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Estadística</th>
+                                <th>Fuente</th>
+                                <th>Año</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Más del 80% de proyectos de IA fracasan</strong> (el doble que proyectos IT tradicionales)</td>
+                                <td>RAND Corporation</td>
+                                <td>2024</td>
+                            </tr>
+                            <tr>
+                                <td><strong>42% de empresas abandonaron la mayoría de iniciativas IA</strong> (subió del 17% en 2024)</td>
+                                <td>S&P Global Market Intelligence</td>
+                                <td>2025</td>
+                            </tr>
+                            <tr>
+                                <td><strong>60% de proyectos IA serán abandonados</strong> por falta de datos "AI-ready"</td>
+                                <td>Gartner</td>
+                                <td>2025</td>
+                            </tr>
+                            <tr>
+                                <td><strong>$3.1 billones anuales</strong> pierden empresas estadounidenses por datos deficientes</td>
+                                <td>IBM</td>
+                                <td>2024-2025</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Las cinco causas raíz principales: malentender el problema, carecer de datos necesarios, enfocarse en tecnología antes que soluciones, infraestructura inadecuada, aplicar IA a problemas demasiado difíciles.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Casos de fracaso -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Casos reales: fracasos por datos deficientes</h2>
+                <p class="slide-subtitle">Lecciones costosas de empresas líderes</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Zillow: pérdida de $500 millones</h4>
+                    <p style="margin-top: 10px;"><strong>El problema:</strong> Su algoritmo de valuación inmobiliaria "Zestimate" cometió errores catastróficos.</p>
+                    <p><strong>Causa raíz:</strong> Datos incompletos — el sistema dependía de datos estructurados (metros cuadrados, habitaciones) pero no capturaba factores no estructurados como dinámica del vecindario, calidad de escuelas y condición de la propiedad.</p>
+                    <p><strong>Resultado:</strong> Despido del 25% de la fuerza laboral y cierre de la división iBuying.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>IBM Watson for Oncology: $4 mil millones invertidos</h4>
+                    <p style="margin-top: 10px;"><strong>El problema:</strong> Falló en entregar recomendaciones seguras de tratamiento oncológico globalmente.</p>
+                    <p><strong>Causa raíz:</strong> Datos de entrenamiento no representativos — entrenado con escenarios hipotéticos en lugar de datos reales de pacientes de poblaciones diversas.</p>
+                    <p><strong>Resultado:</strong> Médicos reportaron recomendaciones frecuentemente irrelevantes o peligrosas.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Apple News AI: crisis de reputación (2025)</h4>
+                    <p style="margin-top: 10px;"><strong>El problema:</strong> Función de resumen con IA generativa inventó información y la atribuyó erróneamente a BBC.</p>
+                    <p><strong>Causa raíz:</strong> IA generativa sin datos apropiadamente fundamentados produciendo "alucinaciones".</p>
+                    <p><strong>Resultado:</strong> Función suspendida por daño a la reputación de la marca.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Lección crítica: <strong>Ningún algoritmo sofisticado puede compensar datos deficientes, incompletos o sesgados</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Casos de éxito -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Casos de éxito mediante datos de calidad</h2>
+                <p class="slide-subtitle">Cuando los datos correctos generan resultados extraordinarios</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>Cathay Pacific Airways</h4>
+                        <p style="margin-top: 10px;"><strong>Proyecto:</strong> AI.g, asistente virtual generativo</p>
+                        <p><strong>Resultado:</strong> 97% de automatización completa procesando más de 4 millones de consultas en cuatro idiomas</p>
+                        <p><strong>Factor de éxito:</strong> Rediseñar flujos de trabajo end-to-end antes de seleccionar modelos — priorizando calidad de datos sobre tecnología</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Amazon - Control de calidad</h4>
+                        <p style="margin-top: 10px;"><strong>Proyecto:</strong> Sistema de control de calidad de catálogo con IA generativa</p>
+                        <p><strong>Resultado:</strong> Detección y bloqueo automático de datos no confiables a escala empresarial</p>
+                        <p><strong>Factor de éxito:</strong> La IA puede gestionar la calidad de datos de IA cuando se diseña apropiadamente</p>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Principio fundamental del éxito</h4>
+                    <p>Las empresas exitosas en IA <strong>invierten primero en infraestructura de datos</strong> antes que en modelos sofisticados. Entienden que la calidad de datos es más importante que la complejidad del algoritmo.</p>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">$3.70</div>
+                        <div class="label">retorno por cada dólar invertido en ML bien implementado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">97%</div>
+                        <div class="label">de automatización lograda por Cathay Pacific</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Dimensiones de calidad de datos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Las seis dimensiones de calidad de datos</h2>
+                <p class="slide-subtitle">Cómo evaluar si sus datos están listos para ML</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dimensión</th>
+                                <th>Definición</th>
+                                <th>Ejemplo en ML</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Exactitud</strong></td>
+                                <td>Datos representan valores reales correctamente</td>
+                                <td>Precios de productos coinciden con precios reales</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Completitud</strong></td>
+                                <td>Todos los datos requeridos están presentes</td>
+                                <td>Perfiles de cliente con todos los atributos necesarios</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Consistencia</strong></td>
+                                <td>Datos coherentes entre diferentes sistemas</td>
+                                <td>Mismo cliente aparece idénticamente en CRM y transacciones</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Oportunidad</strong></td>
+                                <td>Datos actuales y disponibles cuando se necesitan</td>
+                                <td>Inventario en tiempo real para pronóstico de demanda</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Validez</strong></td>
+                                <td>Datos conformes a formatos y reglas definidas</td>
+                                <td>Emails en formato apropiado, fechas válidas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Unicidad</strong></td>
+                                <td>Sin registros duplicados</td>
+                                <td>Un solo registro por cliente único</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Antes de construir cualquier modelo de ML, evalúe sus datos en estas seis dimensiones. <strong>Una sola dimensión comprometida puede arruinar todo el proyecto</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Preprocesamiento - Limpieza de datos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Preprocesamiento: limpieza de datos</h2>
+                <p class="slide-subtitle">La fase que consume 60-70% del tiempo del proyecto</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>El preprocesamiento es como "editar un documento antes de enviarlo" — identifica y corrige errores para que el análisis produzca resultados confiables. <strong>Ningún algoritmo puede compensar datos sucios</strong>.</p>
+                </div>
+
+                <div class="content-box">
+                    <h3>Manejo de valores faltantes</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Método</th>
+                                    <th>Qué hace</th>
+                                    <th>Cuándo usar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Eliminación</strong></td>
+                                    <td>Remueve filas/columnas con datos faltantes</td>
+                                    <td>Menos de 5% faltante, dispersión aleatoria</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Imputación por media/mediana</strong></td>
+                                    <td>Llena vacíos con valores promedio</td>
+                                    <td>Datasets simples, datos numéricos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Imputación por moda</strong></td>
+                                    <td>Llena con valor más común</td>
+                                    <td>Datos categóricos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>K-Nearest Neighbors</strong></td>
+                                    <td>Usa registros similares para estimar</td>
+                                    <td>Cuando existen patrones en datos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Manejo de outliers</h4>
+                        <p style="margin-top: 8px;">Pregunta crítica: ¿es un error o un evento genuino raro?</p>
+                        <p><strong>Ejemplo 1:</strong> En detección de fraude, los outliers pueden ser exactamente lo que buscamos</p>
+                        <p><strong>Ejemplo 2:</strong> En pronóstico de ventas, pueden distorsionar predicciones</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Validación de datos</h4>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>Tipos de datos: ¿"edad" almacena números o texto?</li>
+                            <li>Rangos válidos: ¿todos los precios son positivos?</li>
+                            <li>Validación cruzada: ¿"fecha fin" viene después de "fecha inicio"?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Preprocesamiento - Normalización -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Preprocesamiento: normalización</h2>
+                <p class="slide-subtitle">Poniendo todo en la misma escala</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Analogía simple</h4>
+                    <p>Imagina comparar calificaciones de dos clases — una en escala de 100 puntos, otra en escala de 1000 puntos. La normalización pone todo en la misma escala para que las comparaciones sean justas.</p>
+                </div>
+
+                <div class="key-point">
+                    <h4>Por qué importa para ML</h4>
+                    <p>Sin normalización, características con números más grandes (como salario anual: $50,000-$150,000) dominarán características más pequeñas (como años de experiencia: 1-30). <strong>Muchos algoritmos asumen que todas las características contribuyen igualmente</strong>.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Min-Max Scaling</h3>
+                        <p>Convierte todos los valores a escala 0-1:</p>
+                        <ul style="margin-top: 10px;">
+                            <li>Edad 20 (mínima) → 0.0</li>
+                            <li>Edad 40 (media) → 0.5</li>
+                            <li>Edad 60 (máxima) → 1.0</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Mejor para:</strong> Algoritmos sensibles a escala (redes neuronales, k-NN, SVM)</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Z-Score (Standardization)</h3>
+                        <p>Centra datos alrededor de cero midiendo "cuántas desviaciones estándar del promedio":</p>
+                        <ul style="margin-top: 10px;">
+                            <li>Z-score de 0 = exactamente promedio</li>
+                            <li>Z-score de +1 = una desviación arriba</li>
+                            <li>Z-score de -2 = dos desviaciones abajo</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Mejor para:</strong> Datos con distribución normal, algoritmos basados en distancia</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Regla práctica:</strong> Normalizar siempre que las características tengan unidades o escalas diferentes. No normalizar datos que ya están en la misma escala o cuando el modelo es invariante a escala (árboles de decisión, Random Forest).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Preprocesamiento - Encoding -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Preprocesamiento: encoding</h2>
+                <p class="slide-subtitle">Convirtiendo categorías a números</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>El problema</h4>
+                    <p>Los algoritmos ML trabajan con números, pero los datos de negocio contienen categorías como "Rojo/Azul/Verde" o "Electrónicos/Ropa/Alimentos". <strong>Necesitamos convertir categorías a representaciones numéricas</strong>.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>One-Hot Encoding</h3>
+                        <p><strong>Recomendado para la mayoría de casos de negocio</strong></p>
+                        <p style="margin-top: 10px;">Crea una columna sí/no separada para cada categoría:</p>
+                        <div class="table-container" style="margin-top: 10px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Original</th>
+                                        <th>Es_Norte</th>
+                                        <th>Es_Sur</th>
+                                        <th>Es_Este</th>
+                                        <th>Es_Oeste</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Norte</td>
+                                        <td>1</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sur</td>
+                                        <td>0</td>
+                                        <td>1</td>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p style="margin-top: 10px;"><strong>Mejor para:</strong> Datos nominales (categorías sin orden natural) — productos, colores, países</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Label Encoding</h3>
+                        <p>Asigna un número a cada categoría:</p>
+                        <ul style="margin-top: 10px;">
+                            <li>Apple = 0</li>
+                            <li>Banana = 1</li>
+                            <li>Orange = 2</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Mejor para:</strong> Datos ordinales (categorías con orden natural)</p>
+                        <ul>
+                            <li>Satisfacción: Pobre=1, Regular=2, Bueno=3, Excelente=4</li>
+                            <li>Tallas: S=1, M=2, L=3, XL=4</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top: 20px;">
+                    <p><strong>⚠️ Advertencia:</strong> No usar Label Encoding para datos nominales — el modelo podría interpretar incorrectamente que "Orange (2)" es "mayor que" Apple (0) cuando no hay relación ordinal.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: EDA - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Análisis exploratorio de datos (EDA)</h2>
+                <p class="slide-subtitle">El trabajo detectivesco antes de construir modelos</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es EDA</h4>
+                    <p>El Análisis Exploratorio de Datos es el paso crítico donde analistas investigan datasets para entender sus características principales, <strong>descubrir patrones</strong>, <strong>detectar anomalías</strong> y <strong>probar suposiciones</strong> — principalmente usando métodos visuales. Es el "trabajo detectivesco" antes de construir cualquier modelo.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">80%</div>
+                        <div class="label">del tiempo los científicos de datos lo pasan en limpieza y exploración</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">1970s</div>
+                        <div class="label">desarrollado por el matemático John Tukey</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Por qué es crítico hacer EDA</h3>
+                    <p>Saltar EDA frecuentemente lleva a:</p>
+                    <ul>
+                        <li><strong>Construir modelos sobre distribuciones sesgadas</strong> — sin entender los datos reales</li>
+                        <li><strong>Perder outliers críticos</strong> que señalan fraude o fallas de equipos</li>
+                        <li><strong>Desperdiciar semanas</strong> en características que no correlacionan con resultados</li>
+                        <li><strong>No detectar problemas de calidad</strong> hasta que es demasiado tarde</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>EDA responde la pregunta fundamental: <strong>"¿Qué nos están diciendo estos datos antes de hacer suposiciones?"</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Técnicas de EDA -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Técnicas principales de EDA</h2>
+                <p class="slide-subtitle">Del análisis univariado al multivariado</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Análisis univariado</h4>
+                        <p style="margin-top: 10px;"><strong>Una variable a la vez</strong></p>
+                        <p>Ejemplo: Antes de analizar qué clientes abandonan, entender el perfil básico de la base de clientes — distribución de edad, patrones de gasto, dispersión geográfica</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Análisis bivariado</h4>
+                        <p style="margin-top: 10px;"><strong>Relaciones entre dos variables</strong></p>
+                        <p>Ejemplo: Entender la relación entre gasto en marketing y ventas, o antigüedad del cliente y frecuencia de compra</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Análisis multivariado</h4>
+                        <p style="margin-top: 10px;"><strong>Múltiples variables simultáneamente</strong></p>
+                        <p>Ejemplo: Cómo edad, ingreso y frecuencia de compra juntos predicen valor de vida del cliente</p>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Análisis de correlación</h4>
+                    <p>Medir la fuerza y dirección de relaciones entre variables (de -1 a +1).</p>
+                    <p style="margin-top: 10px;"><strong>⚠️ Correlación NO equivale a causalidad</strong> — las ventas de helado correlacionan con incidentes de ahogamiento, pero ambos son causados por el clima veraniego.</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Insights de negocio descubiertos mediante EDA</h3>
+                    <ul>
+                        <li><strong>Walmart:</strong> las ventas de Pop-Tarts de fresa aumentaban 7x antes de huracanes</li>
+                        <li><strong>Netflix:</strong> alta demanda de dramas políticos + afinidad por Kevin Spacey → "House of Cards"</li>
+                        <li><strong>Cliente retail:</strong> 15% de "clientes de alto valor" eran abusadores de devoluciones (ahorro de $2.7M anuales)</li>
+                        <li><strong>Manufactura:</strong> anomalías de vibración precedían 92% de fallas por 36 horas ($4.2M ahorro anual)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Visualización - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Visualización de datos y su rol en ML</h2>
+                <p class="slide-subtitle">Comunicando insights de manera efectiva</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Por qué la visualización es esencial</h4>
+                    <p>La visualización cumple roles críticos en tres etapas del ciclo ML: <strong>comprensión de datos</strong> (patrones invisibles en datos crudos se vuelven evidentes), <strong>desarrollo de modelos</strong> (identificar overfitting/underfitting), y <strong>comunicación de resultados</strong> (convencer stakeholders).</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">67%</div>
+                        <div class="label">de audiencias convencidas con visuales vs. 50% solo verbal</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">97%</div>
+                        <div class="label">creen afirmaciones con gráficos vs. 68% solo texto</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">80%</div>
+                        <div class="label">de empresas con analytics en tiempo real reportan incremento de ingresos</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>En comprensión de datos</h3>
+                        <ul>
+                            <li>Histogramas revelan distribuciones</li>
+                            <li>Box plots identifican outliers</li>
+                            <li>Scatter plots muestran relaciones</li>
+                            <li>Heatmaps revelan correlaciones</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>En comunicación de resultados</h3>
+                        <ul>
+                            <li>Matrices de confusión muestran errores</li>
+                            <li>Curvas ROC evalúan clasificadores</li>
+                            <li>Feature importance guía decisiones</li>
+                            <li>Dashboards interactivos para stakeholders</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La visualización efectiva transforma datos complejos en <strong>insights accionables</strong> que impulsan decisiones de negocio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Tipos de visualización -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Tipos de visualización por tipo de datos</h2>
+                <p class="slide-subtitle">Eligiendo la visualización correcta para cada situación</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo de datos</th>
+                                <th>Visualizaciones efectivas</th>
+                                <th>Aplicación de negocio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Numéricos</strong></td>
+                                <td>Histogramas, scatter plots, box plots, heatmaps</td>
+                                <td>Distribución de ingresos, correlaciones entre variables</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Categóricos</strong></td>
+                                <td>Bar charts, pie charts, treemaps, Sankey diagrams</td>
+                                <td>Ventas por región, composición de portafolio</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Series temporales</strong></td>
+                                <td>Line charts, area charts, candlestick charts</td>
+                                <td>Crecimiento de ingresos, tendencias de engagement</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Geográficos</strong></td>
+                                <td>Choropleth maps, bubble maps, heat maps</td>
+                                <td>Ventas por estado, concentración de clientes</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Alta dimensionalidad</strong></td>
+                                <td>PCA, t-SNE, UMAP, parallel coordinates</td>
+                                <td>Segmentación de clientes, clustering de productos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Tendencias actuales en visualización (2025-2026)</h3>
+                    <ul>
+                        <li><strong>Visualizaciones interactivas:</strong> empresas con herramientas interactivas son 28% más propensas a encontrar información más rápido</li>
+                        <li><strong>Herramientas asistidas por IA:</strong> queries en lenguaje natural generan visualizaciones automáticamente (Power BI, Tableau)</li>
+                        <li><strong>Dashboards en tiempo real:</strong> tasas de actualización de 30-60 segundos para detección de fraude, monitoreo de producción</li>
+                        <li><strong>Storytelling con datos:</strong> narrativas visuales que guían al usuario a través de insights</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Para stakeholders no técnicos: usar visualizaciones simples, añadir anotaciones claras, enfocarse en impacto de negocio, usar codificación de colores consistente.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Google Colab - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Google Colab: su laboratorio de datos en la nube</h2>
+                <p class="slide-subtitle">Python, Jupyter notebooks y poder computacional gratuito</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es Google Colab</h4>
+                    <p>Google Colaboratory es un <strong>entorno de notebook Jupyter alojado en la nube</strong>, completamente gratuito, que permite escribir y ejecutar código Python en el navegador sin instalación. <strong>Es la herramienta de facto</strong> para aprendizaje de ML, prototipado rápido y análisis de datos.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">100%</div>
+                        <div class="label">basado en navegador, sin instalación</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">0$</div>
+                        <div class="label">completamente gratis con acceso a GPU/TPU</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">2025</div>
+                        <div class="label">lanzamiento del Data Science Agent con Gemini</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Ventajas principales</h3>
+                        <ul>
+                            <li><strong>Sin configuración:</strong> Python, pandas, scikit-learn pre-instalados</li>
+                            <li><strong>Colaboración en tiempo real:</strong> como Google Docs para código</li>
+                            <li><strong>Recursos gratuitos:</strong> GPU y TPU para entrenar modelos</li>
+                            <li><strong>Integración con Google Drive:</strong> acceso directo a sus datos</li>
+                            <li><strong>Compartir fácilmente:</strong> solo con un enlace</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Casos de uso perfectos</h3>
+                        <ul>
+                            <li>Limpieza y exploración de datos</li>
+                            <li>Visualización interactiva</li>
+                            <li>Prototipado rápido de modelos ML</li>
+                            <li>Educación y tutoriales</li>
+                            <li>Compartir análisis reproducibles</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>URL:</strong> https://colab.research.google.com/<br>
+                    Usado en Stanford, MIT, Google Brain. En julio 2025, Google lanzó Colab Pro GRATIS para estudiantes y facultad de EE.UU.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Gemini en Colab -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Gemini integrado en Colab</h2>
+                <p class="slide-subtitle">IA que escribe código de análisis de datos por ti</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es el Data Science Agent</h4>
+                    <p>En 2025, Google lanzó el <strong>Data Science Agent impulsado por Gemini</strong> que puede <strong>automatizar EDA completo</strong> con prompts en lenguaje natural. Le describes lo que quieres hacer, y Gemini genera el código Python, ejecuta el análisis y crea visualizaciones.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Qué puede hacer Gemini</h3>
+                        <ul>
+                            <li><strong>Generar código Python:</strong> "Crea un histograma de la columna edad"</li>
+                            <li><strong>Explicar código existente:</strong> entender qué hace cada línea</li>
+                            <li><strong>Sugerir mejoras:</strong> optimizar código para mejor rendimiento</li>
+                            <li><strong>Depurar errores:</strong> identificar y corregir bugs</li>
+                            <li><strong>Automatizar EDA:</strong> análisis exploratorio completo con un prompt</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Ejemplo de prompts</h3>
+                        <ul>
+                            <li>"Lee el archivo customers.csv y muéstrame las primeras filas"</li>
+                            <li>"Identifica valores faltantes en todas las columnas"</li>
+                            <li>"Crea un scatter plot de ventas vs. marketing_spend"</li>
+                            <li>"Calcula la correlación entre todas las variables numéricas"</li>
+                            <li>"Normaliza la columna precio usando min-max scaling"</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Filosofía de uso:</strong> Gemini es tu copiloto, no tu piloto. Aprende a leer y modificar el código generado — la IA acelera tu trabajo pero tú mantienes el control y entiendes la lógica.</p>
+                </div>
+
+                <div class="warning-box" style="margin-top: 15px;">
+                    <p><strong>Nota:</strong> Las características IA pueden ser activadas/desactivadas por instructores. Siempre valida los resultados generados por IA.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Demostración práctica con Colab -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Demostración práctica: EDA con Colab</h2>
+                <p class="slide-subtitle">Del dataset crudo a insights accionables</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3>Flujo típico de trabajo en Colab</h3>
+                    <p>Vamos a demostrar un análisis exploratorio completo usando un dataset de ejemplo de ventas de electrónicos:</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Paso 1: Cargar y explorar datos</h3>
+                    <div class="code-box">import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Cargar datos (usaremos archivo de ejemplo ventas.csv)
+df = pd.read_csv('ventas.csv')
+
+# Exploración inicial
+print(df.head())
+print(df.info())
+print(df.describe())</div>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Paso 2: Identificar problemas de calidad</h3>
+                    <div class="code-box"># Valores faltantes
+print(df.isnull().sum())
+
+# Duplicados
+print(f"Duplicados: {df.duplicated().sum()}")
+
+# Outliers con box plot
+plt.figure(figsize=(10, 6))
+df.boxplot(column=['precio_unitario', 'cantidad'])</div>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Paso 3: Visualizar patrones</h3>
+                    <div class="code-box"># Distribución de ventas por categoría
+df.groupby('categoria')['ventas'].sum().plot(kind='bar')
+
+# Correlación entre variables numéricas
+correlation = df[['cantidad', 'precio_unitario', 'ventas']].corr()
+sns.heatmap(correlation, annot=True, cmap='coolwarm')</div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Durante la demostración en vivo, usaremos Gemini para generar este código automáticamente y exploraremos cómo modificarlo según nuestras necesidades.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Herramientas modernas 2025-2026 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas modernas de EDA y visualización</h2>
+                <p class="slide-subtitle">El ecosistema actual (enero 2026)</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3>Plataformas de notebooks y análisis</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Herramienta</th>
+                                    <th>Mejor para</th>
+                                    <th>Características clave</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Google Colab</strong></td>
+                                    <td>Principiantes y prototipado</td>
+                                    <td>Gratis, GPU/TPU, Gemini integrado</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kaggle Notebooks</strong></td>
+                                    <td>Aprendizaje y competencias</td>
+                                    <td>50,000+ datasets, comunidad activa</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Databricks Free Edition</strong></td>
+                                    <td>Ambiente profesional</td>
+                                    <td>Plataforma enterprise, Genie (queries en lenguaje natural)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Observable</strong></td>
+                                    <td>Visualizaciones interactivas</td>
+                                    <td>JavaScript, D3.js, creación asistida por IA</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Bibliotecas Python para EDA automatizado</h3>
+                        <ul>
+                            <li><strong>YData-Profiling:</strong> reportes HTML completos con una línea</li>
+                            <li><strong>Sweetviz:</strong> reportes interactivos comparativos</li>
+                            <li><strong>AutoViz:</strong> genera visualizaciones automáticamente</li>
+                            <li><strong>Lux:</strong> recomienda visualizaciones inteligentemente</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Herramientas de visualización empresarial</h3>
+                        <ul>
+                            <li><strong>Google Looker Studio:</strong> dashboards gratuitos, integración Google</li>
+                            <li><strong>Power BI:</strong> queries en lenguaje natural con IA</li>
+                            <li><strong>Tableau:</strong> visualizaciones profesionales interactivas</li>
+                            <li><strong>Plotly Dash:</strong> dashboards Python interactivos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Tendencia 2025-2026:</strong> El 70% de nuevas aplicaciones usarán herramientas low-code/no-code para 2026, democratizando el acceso al análisis de datos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Polars y DuckDB -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas emergentes: Polars y DuckDB</h2>
+                <p class="slide-subtitle">La próxima generación de procesamiento de datos</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>Polars: Pandas acelerado</h4>
+                        <p style="margin-top: 10px;"><strong>Qué es:</strong> Biblioteca de procesamiento de datos escrita en Rust, compatible con sintaxis similar a Pandas</p>
+                        <p><strong>Ventaja principal:</strong> 7.7x más rápido que Pandas para CSVs grandes</p>
+                        <p><strong>Características:</strong></p>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>Evaluación lazy (ejecuta solo cuando necesario)</li>
+                            <li>Paralelización automática</li>
+                            <li>Uso eficiente de memoria</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>DuckDB: SQL analítico</h4>
+                        <p style="margin-top: 10px;"><strong>Qué es:</strong> Base de datos analítica SQL-nativa embebida</p>
+                        <p><strong>Ventaja principal:</strong> 2-6x más rápido que Spark para analítica</p>
+                        <p><strong>Características:</strong></p>
+                        <ul style="font-size: 13px; margin-top: 8px;">
+                            <li>SQL estándar completo</li>
+                            <li>Sin servidor (embedded)</li>
+                            <li>Queries directos sobre Parquet, CSV</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Ejemplo comparativo de velocidad</h3>
+                    <div class="code-box">
+# Pandas (tradicional)
+import pandas as pd
+df = pd.read_csv('large_file.csv')
+result = df.groupby('category')['sales'].sum()
+
+# Polars (7.7x más rápido)
+import polars as pl
+df = pl.read_csv('large_file.csv')
+result = df.groupby('category').agg(pl.col('sales').sum())
+
+# DuckDB (SQL directo sobre archivo)
+import duckdb
+result = duckdb.sql("""
+    SELECT category, SUM(sales) 
+    FROM 'large_file.csv' 
+    GROUP BY category
+""").df()
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Cuándo usar qué:</strong> Pandas para datasets pequeños/medianos y prototipado. Polars para datasets grandes con operaciones complejas. DuckDB para analítica SQL sobre archivos grandes sin cargar en memoria.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Mejores prácticas de EDA -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Mejores prácticas de EDA para negocios</h2>
+                <p class="slide-subtitle">Cómo hacer EDA de manera efectiva y eficiente</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3>1. Comience con preguntas de negocio claras</h3>
+                    <p>No explore datos sin dirección. Defina qué quiere descubrir:</p>
+                    <ul>
+                        <li>¿Qué factores influyen más en la retención de clientes?</li>
+                        <li>¿Existen segmentos de clientes con comportamientos distintos?</li>
+                        <li>¿Qué productos se compran frecuentemente juntos?</li>
+                    </ul>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>2. Siga una estructura sistemática</h3>
+                        <ul>
+                            <li>Entender el contexto de los datos</li>
+                            <li>Inspeccionar dimensiones y tipos</li>
+                            <li>Identificar valores faltantes y outliers</li>
+                            <li>Analizar distribuciones univariadas</li>
+                            <li>Explorar relaciones bivariadas</li>
+                            <li>Buscar patrones temporales</li>
+                            <li>Documentar hallazgos</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>3. Visualice antes de modelar</h3>
+                        <ul>
+                            <li>Una imagen vale más que mil estadísticas</li>
+                            <li>Patrones ocultos se revelan visualmente</li>
+                            <li>Valide suposiciones con gráficos</li>
+                            <li>Comunique hallazgos efectivamente</li>
+                            <li>Use múltiples tipos de gráficos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>4. Documente todo el proceso</h3>
+                    <p>Cree notebooks reproducibles que otros puedan seguir:</p>
+                    <ul>
+                        <li>Explique el propósito de cada análisis</li>
+                        <li>Documente decisiones de limpieza</li>
+                        <li>Anote hallazgos importantes</li>
+                        <li>Incluya interpretaciones de negocio</li>
+                        <li>Versione sus notebooks con Git</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Regla de oro:</strong> El EDA no es lineal — itere entre exploración, limpieza y validación hasta entender completamente sus datos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Errores comunes en EDA -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Errores comunes en EDA y cómo evitarlos</h2>
+                <p class="slide-subtitle">Aprenda de los errores más frecuentes</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>❌ Error 1: Confiar ciegamente en la estadística descriptiva</h4>
+                    <p style="margin-top: 10px;">El "Cuarteto de Anscombe" demuestra que datasets con estadísticas idénticas pueden tener distribuciones completamente diferentes.</p>
+                    <p><strong>Solución:</strong> Siempre visualice sus datos. Los gráficos revelan lo que las estadísticas ocultan.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>❌ Error 2: Ignorar el contexto de negocio</h4>
+                    <p style="margin-top: 10px;">Un outlier de $1M en ventas puede ser un error... o su mejor cliente.</p>
+                    <p><strong>Solución:</strong> Consulte con expertos de dominio antes de eliminar datos "anómalos".</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>❌ Error 3: No verificar suposiciones</h4>
+                    <p style="margin-top: 10px;">Asumir que los datos son representativos sin verificar sesgos de muestreo.</p>
+                    <p><strong>Solución:</strong> Pregunte: ¿Cómo se recolectaron estos datos? ¿Qué población representan?</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>❌ Error 4: Correlación implica causalidad</h4>
+                    <p style="margin-top: 10px;">Las ventas de helado correlacionan con ahogamientos — ambos aumentan en verano.</p>
+                    <p><strong>Solución:</strong> Use correlación para hipótesis, no para conclusiones. Valide causalidad con experimentos.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>❌ Error 5: Data leakage en exploración</h4>
+                    <p style="margin-top: 10px;">Usar datos de test durante EDA contamina la evaluación del modelo.</p>
+                    <p><strong>Solución:</strong> Separe train/test ANTES de EDA. Explore solo el conjunto de entrenamiento.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La mayoría de errores en ML se originan en EDA deficiente, no en selección de algoritmos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 21: Impacto en el negocio -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Impacto de datos de calidad en el negocio</h2>
+                <p class="slide-subtitle">ROI de invertir en infraestructura de datos</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">$3.70</div>
+                        <div class="label">retorno por cada dólar invertido en ML bien implementado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">40-60%</div>
+                        <div class="label">reducción en tiempo de desarrollo con feature engineering adecuado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">28%</div>
+                        <div class="label">más rápido encontrar insights con herramientas interactivas</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Beneficios cuantificables</h3>
+                        <ul>
+                            <li><strong>Walmart:</strong> 40% reducción en costos de inventario, 25% incremento en satisfacción del cliente</li>
+                            <li><strong>Netflix:</strong> 80% de horas vistas provienen de recomendaciones algorítmicas</li>
+                            <li><strong>Cliente retail:</strong> $2.7M ahorro anual detectando abuso de devoluciones</li>
+                            <li><strong>Manufactura:</strong> $4.2M ahorro anual con mantenimiento predictivo</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Ventajas competitivas</h3>
+                        <ul>
+                            <li><strong>Decisiones más rápidas:</strong> datos limpios aceleran análisis</li>
+                            <li><strong>Mejor precisión:</strong> modelos entrenados con datos de calidad</li>
+                            <li><strong>Reducción de riesgos:</strong> detectar problemas temprano</li>
+                            <li><strong>Innovación habilitada:</strong> nuevos productos basados en insights</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Inversión estratégica:</strong> Las organizaciones que invierten apropiadamente en infraestructura de datos construyen cimientos sólidos para innovación sostenible. Las que saltan esta fase descubren que ningún algoritmo puede compensar datos deficientes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 22: Conclusiones -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Conclusiones: el fundamento invisible del éxito</h2>
+                <p class="slide-subtitle">Conceptos clave para llevar</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>La preparación y exploración de datos representa <strong>el fundamento invisible pero determinante</strong> del éxito en cualquier iniciativa de ML/IA. El 80% de proyectos fracasan, y la causa principal no es la sofisticación del algoritmo sino la calidad de los datos que lo alimentan.</p>
+                </div>
+
+                <div class="content-box">
+                    <h3>Lo que aprendimos hoy</h3>
+                    <ul>
+                        <li><strong>Calidad de datos:</strong> las seis dimensiones (exactitud, completitud, consistencia, oportunidad, validez, unicidad)</li>
+                        <li><strong>Preprocesamiento:</strong> limpieza, normalización y encoding son esenciales antes de modelar</li>
+                        <li><strong>EDA:</strong> el trabajo detectivesco que revela patrones y problemas ocultos</li>
+                        <li><strong>Visualización:</strong> comunicar insights efectivamente a stakeholders</li>
+                        <li><strong>Herramientas modernas:</strong> Google Colab, Gemini, Polars, DuckDB democratizan el análisis</li>
+                    </ul>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Habilidades que dominan ahora</h4>
+                        <ul style="font-size: 14px; margin-top: 8px;">
+                            <li>Evaluar calidad de datos sistemáticamente</li>
+                            <li>Aplicar técnicas de preprocesamiento</li>
+                            <li>Realizar EDA estructurado</li>
+                            <li>Crear visualizaciones efectivas</li>
+                            <li>Usar Google Colab y Gemini</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Para el futuro</h4>
+                        <ul style="font-size: 14px; margin-top: 8px;">
+                            <li>La regla del 80/20 en ML es realidad a abrazar</li>
+                            <li>Las herramientas han democratizado el acceso</li>
+                            <li>IA asiste pero no reemplaza comprensión</li>
+                            <li>Documentación es tan importante como análisis</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p style="text-align: center; font-size: 1.3em;">Ahora aplicarán todo lo aprendido en un <strong>caso práctico real</strong> donde evaluarán la preparación de datos de una empresa para un proyecto de IA.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 23: Transición al caso -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Preparados para el caso práctico</h2>
+                <p class="slide-subtitle">Poniendo en práctica los conceptos de hoy</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Lo que harán a continuación</h4>
+                    <p>Trabajarán en equipos en un <strong>caso práctico aplicado</strong> donde analizarán la calidad de datos de una empresa real, realizarán EDA, identificarán problemas críticos y propondrán soluciones accionables.</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Herramientas a su disposición</h3>
+                    <ul>
+                        <li><strong>Google Colab:</strong> para análisis y visualización</li>
+                        <li><strong>Gemini:</strong> para generar código rápidamente</li>
+                        <li><strong>Pandas/Polars:</strong> para manipulación de datos</li>
+                        <li><strong>Matplotlib/Seaborn:</strong> para visualizaciones</li>
+                        <li><strong>Conceptos aprendidos:</strong> dimensiones de calidad, EDA sistemático, mejores prácticas</li>
+                    </ul>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">30-40 min</div>
+                        <div class="label">tiempo para trabajar el caso</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">5-7 min</div>
+                        <div class="label">presentación del equipo seleccionado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">2%</div>
+                        <div class="label">del curso (25 puntos)</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <p style="text-align: center; font-size: 1.5em; font-weight: 700;">¡Manos a la obra!</p>
+                    <p style="text-align: center; margin-top: 10px;">Demuestren su dominio de preparación y exploración de datos resolviendo un desafío real de negocios.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
