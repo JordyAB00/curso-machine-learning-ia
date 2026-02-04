@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprendizaje Supervisado: Clasificación - Semana 4</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #f5f5f7;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 80px 140px 80px;
+            background: #f5f5f7;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-header {
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 20px;
+            color: #6e6e73;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2d1b4e, #00d4ff);
+            border-radius: 10px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-box h3 {
+            font-size: 24px;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .content-box p {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .content-box li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-size: 20px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f0f2, #ffffff);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight-box p {
+            font-size: 17px;
+            color: #2d1b4e;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .key-point {
+            background: #ffffff;
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e5e7;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .key-point h4 {
+            color: #2d1b4e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .key-point p {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(45, 27, 78, 0.15);
+            border-color: #00d4ff;
+        }
+
+        .comparison-card h4 {
+            font-size: 19px;
+            color: #2d1b4e;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card p {
+            font-size: 14px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .four-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        strong {
+            color: #2d1b4e;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 50%, #ffffff 100%);
+            padding: 60px 80px 140px 80px;
+        }
+
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff, #2d1b4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cover-subtitle {
+            font-size: 32px;
+            color: #6e6e73;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .cover-info {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #6e6e73;
+            font-size: 16px;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d1b4e, #00d4ff);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        tr:hover {
+            background: #f8f8ff;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px 140px 24px;
+            }
+
+            .slide-title {
+                font-size: 32px;
+            }
+
+            .slide-subtitle {
+                font-size: 16px;
+            }
+
+            .cover-title {
+                font-size: 42px;
+            }
+
+            .cover-subtitle {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stats-grid,
+            .two-columns,
+            .three-columns,
+            .four-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">20</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Portada -->
+        <div class="slide cover-slide active">
+            <h1 class="cover-title">Aprendizaje supervisado: clasificación</h1>
+            <p class="cover-subtitle">Semana 4: Los algoritmos fundamentales del ML empresarial</p>
+            <div class="cover-info">
+                <p>Microcredencial en Inteligencia Artificial y Análisis de Datos<br>
+                Universidad Latinoamericana de Ciencia y Tecnología<br>
+                Enero 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Agenda de la sesión</h2>
+                <p class="slide-subtitle">El pilar más aplicado del machine learning empresarial</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">$6B</div>
+                        <div class="label">invertidos globalmente en soluciones de clasificación (2025)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">90%</div>
+                        <div class="label">de casos de uso empresarial reales utilizan algoritmos clásicos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">3</div>
+                        <div class="label">algoritmos fundamentales que dominarán hoy</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 30px;">
+                    <h3>Lo que aprenderemos hoy</h3>
+                    <ul>
+                        <li>Fundamentos de clasificación supervisada y su relevancia actual</li>
+                        <li>Regresión logística: el algoritmo interpretable por excelencia</li>
+                        <li>Árboles de decisión: visualización y explicabilidad</li>
+                        <li>K-Nearest Neighbors (k-NN): aprendizaje basado en similitud</li>
+                        <li>Cuándo usar cada algoritmo según el problema de negocio</li>
+                        <li>Aplicaciones reales en finanzas, manufactura y healthcare</li>
+                        <li>Demostración práctica con herramientas interactivas</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Hoy dominarán los algoritmos que realmente impulsan las aplicaciones empresariales de ML — desde credit scoring hasta control de calidad.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Qué es clasificación -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Qué es la clasificación supervisada</h2>
+                <p class="slide-subtitle">Predicción de categorías discretas a partir de patrones aprendidos</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Definición fundamental</h4>
+                    <p>La clasificación supervisada es una técnica de machine learning que <strong>aprende patrones de datos etiquetados</strong> para predecir categorías discretas en datos nuevos. Opera en dos fases: <strong>entrenamiento</strong> (aprendizaje de patrones) e <strong>inferencia</strong> (predicción).</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Ejemplos cotidianos</h3>
+                        <ul>
+                            <li><strong>Email:</strong> ¿Es spam o no spam?</li>
+                            <li><strong>Banca:</strong> ¿Aprobar o rechazar préstamo?</li>
+                            <li><strong>Medicina:</strong> ¿Tumor benigno o maligno?</li>
+                            <li><strong>Retail:</strong> ¿Cliente comprará o no?</li>
+                            <li><strong>Seguridad:</strong> ¿Transacción fraudulenta o legítima?</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Cómo funciona</h3>
+                        <p style="margin-bottom: 10px;"><strong>Fase 1: Entrenamiento</strong></p>
+                        <ul>
+                            <li>Datos históricos con etiquetas conocidas</li>
+                            <li>El algoritmo identifica patrones</li>
+                            <li>Genera un modelo predictivo</li>
+                        </ul>
+                        <p style="margin-bottom: 10px; margin-top: 15px;"><strong>Fase 2: Inferencia</strong></p>
+                        <ul>
+                            <li>Datos nuevos sin etiqueta</li>
+                            <li>El modelo predice la categoría</li>
+                            <li>Se evalúa la confianza de la predicción</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>A diferencia de la regresión (que predice números continuos como precio o temperatura), la clasificación predice categorías discretas — sí/no, A/B/C, fraude/legítimo.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Evolución y relevancia actual -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Evolución y relevancia en 2026</h2>
+                <p class="slide-subtitle">Por qué los algoritmos clásicos siguen dominando</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>El hallazgo de MIT (abril 2025)</h4>
+                    <p>Un estudio revolucionario demostró que <strong>los métodos tradicionales de clasificación igualan o superan al deep learning</strong> en datos tabulares — el formato más común en negocios. Esto valida la relevancia continua de algoritmos como regresión logística, árboles de decisión y k-NN.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>2020-2023: Dominio de Ensemble</h4>
+                        <p style="margin-top: 10px;">Métodos como XGBoost y LightGBM dominaron competencias de ML y aplicaciones empresariales por su precisión superior.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>2024-2026: Integración con XAI</h4>
+                        <p style="margin-top: 10px;">La prioridad cambió hacia Explainable AI (XAI) y AutoML — poder explicar decisiones algorítmicas es ahora requisito regulatorio.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>La "tabla periódica del ML" (MIT, 2025)</h3>
+                    <p>Investigadores unificaron más de 20 algoritmos clásicos bajo una ecuación común llamada Information Contrastive Learning, permitiendo fusiones algorítmicas que mejoran el rendimiento hasta 8%. Este es el <strong>avance conceptual más significativo de la década</strong>.</p>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">0.7%</div>
+                        <div class="label">de papers de XAI validaron sus métodos con evaluación humana (MIT, 2025)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">EU AI Act</div>
+                        <div class="label">exige ahora documentación de decisiones algorítmicas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Regresión Logística - Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Regresión logística</h2>
+                <p class="slide-subtitle">El algoritmo interpretable por excelencia</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>La regresión logística transforma combinaciones lineales de características en <strong>probabilidades</strong> mediante la función sigmoide: σ(z) = 1/(1+e^(-z)). Sus coeficientes muestran directamente el impacto de cada variable como <strong>odds ratios</strong>, haciéndolo ideal para entornos regulados.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Ventajas principales</h3>
+                        <ul>
+                            <li><strong>Interpretabilidad máxima:</strong> cada coeficiente explica el efecto de una variable</li>
+                            <li><strong>Salida probabilística:</strong> no solo predice categoría, sino confianza (0-100%)</li>
+                            <li><strong>Velocidad:</strong> entrenamiento e inferencia muy rápidos</li>
+                            <li><strong>Bajo consumo de memoria:</strong> ideal para producción</li>
+                            <li><strong>Cumplimiento regulatorio:</strong> auditores pueden verificar cada decisión</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Limitaciones</h3>
+                        <ul>
+                            <li>Asume relaciones lineales entre características y variable objetivo</li>
+                            <li>No captura interacciones complejas automáticamente</li>
+                            <li>Sensible a multicolinealidad</li>
+                            <li>Requiere escalado de características</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>Caso de uso perfecto: Credit scoring</h4>
+                    <p style="margin-top: 10px;">Entidades financieras utilizan regresión logística como primera línea en scoring crediticio porque <strong>los reguladores pueden auditar cada decisión</strong>. Un banco puede explicar: "El préstamo fue rechazado porque el ratio deuda/ingreso (0.55) supera nuestro umbral de riesgo, con peso de 2.3 en el modelo."</p>
+                </div>
+
+                <div class="highlight-box">
+                    <p>En 2026, con regulaciones como el EU AI Act, la interpretabilidad de la regresión logística la mantiene como estándar en finanzas, seguros y healthcare.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Árboles de Decisión -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Árboles de decisión</h2>
+                <p class="slide-subtitle">Visualización y explicabilidad natural</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funcionan</h4>
+                    <p>Los árboles de decisión <strong>particionan recursivamente los datos</strong> creando estructuras visualizables como diagramas de flujo. Cada nodo interno representa una pregunta sobre una característica, cada rama es una respuesta, y cada hoja es una predicción final.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Ventajas principales</h3>
+                        <ul>
+                            <li><strong>Interpretabilidad visual:</strong> se puede dibujar como diagrama</li>
+                            <li><strong>No requiere escalado:</strong> funcionan con datos en cualquier escala</li>
+                            <li><strong>Manejo automático de no linealidad:</strong> capturan relaciones complejas</li>
+                            <li><strong>Gestión de valores faltantes:</strong> pueden trabajar con datos incompletos</li>
+                            <li><strong>Feature importance:</strong> identifican variables más importantes</li>
+                            <li><strong>Multiclase nativo:</strong> clasifican múltiples categorías directamente</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Limitaciones</h3>
+                        <ul>
+                            <li><strong>Inestabilidad:</strong> pequeños cambios en datos pueden generar árboles muy diferentes</li>
+                            <li><strong>Propensos a overfitting:</strong> sin poda, memorizan datos de entrenamiento</li>
+                            <li><strong>Sesgos:</strong> favorecen características con más valores únicos</li>
+                            <li>Límites de decisión ortogonales (solo cortes horizontales/verticales)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>Caso de éxito: BMW Control de Calidad</h4>
+                    <p style="margin-top: 10px;">BMW implementó árboles de decisión para control de calidad automotriz logrando <strong>60% reducción en defectos vehiculares</strong> y reduciendo en dos tercios el tiempo para implementar nuevos checks. La clave: los ingenieros pueden entender y validar cada regla del árbol.</p>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Los árboles de decisión son la base de los métodos ensemble más poderosos: Random Forest (múltiples árboles votando) y XGBoost (árboles secuenciales corrigiendo errores).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: K-Nearest Neighbors -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">K-Nearest Neighbors (k-NN)</h2>
+                <p class="slide-subtitle">Aprendizaje basado en similitud</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>k-NN es un algoritmo "perezoso" (lazy learner) que <strong>no entrena explícitamente</strong> — almacena todo el dataset y clasifica nuevas instancias por <strong>voto mayoritario de los k vecinos más cercanos</strong>. Es como preguntar a tus k amigos más similares: "¿En qué categoría creen que va esto?"</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Ventajas principales</h3>
+                        <ul>
+                            <li><strong>Simplicidad conceptual:</strong> muy intuitivo de explicar</li>
+                            <li><strong>No asume distribución de datos:</strong> no paramétrico</li>
+                            <li><strong>Sin fase de entrenamiento:</strong> simplemente almacena datos</li>
+                            <li><strong>Funciona bien con datasets pequeños-medianos</strong></li>
+                            <li><strong>Adapta automáticamente:</strong> nuevos datos se integran fácilmente</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Limitaciones</h3>
+                        <ul>
+                            <li><strong>Inferencia costosa:</strong> debe calcular distancias a todos los puntos</li>
+                            <li><strong>Sensible a escala:</strong> requiere normalización obligatoria</li>
+                            <li><strong>Maldición de la dimensionalidad:</strong> falla con muchas características</li>
+                            <li><strong>Sensible a datos irrelevantes:</strong> ruido afecta predicciones</li>
+                            <li>Alto uso de memoria (almacena todo el dataset)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>La elección de k es crucial</h4>
+                    <p><strong>k pequeño (ej. k=1):</strong> Alta sensibilidad, captura ruido, fronteras irregulares, riesgo de overfitting<br>
+                    <strong>k grande (ej. k=50):</strong> Suaviza decisiones, más robusto a ruido, puede sobre-generalizar<br>
+                    <strong>Regla práctica:</strong> k = √n donde n es el número de ejemplos de entrenamiento, siempre usar k impar para evitar empates</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>Cuándo usar k-NN</h4>
+                    <p style="margin-top: 10px;">Ideal para sistemas de recomendación ("clientes similares a ti compraron..."), detección de anomalías (puntos sin vecinos cercanos), y cuando necesitas explicar predicciones a stakeholders no técnicos ("tu caso es similar a estos 5 casos históricos").</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Comparación de algoritmos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Comparación: cuándo usar cada algoritmo</h2>
+                <p class="slide-subtitle">Selección fundamentada según el problema de negocio</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Criterio</th>
+                                <th>Regresión Logística</th>
+                                <th>Árboles de Decisión</th>
+                                <th>k-NN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Interpretabilidad</strong></td>
+                                <td>★★★★★ Máxima</td>
+                                <td>★★★★☆ Alta (visual)</td>
+                                <td>★★★☆☆ Media</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Velocidad entrenamiento</strong></td>
+                                <td>★★★★★ Muy rápido</td>
+                                <td>★★★★☆ Rápido</td>
+                                <td>★★★★★ Instantáneo (no entrena)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Velocidad inferencia</strong></td>
+                                <td>★★★★★ Muy rápido</td>
+                                <td>★★★★☆ Rápido</td>
+                                <td>★★☆☆☆ Lento</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manejo no linealidad</strong></td>
+                                <td>★★☆☆☆ Limitado</td>
+                                <td>★★★★★ Excelente</td>
+                                <td>★★★★☆ Bueno</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sensibilidad a escala</strong></td>
+                                <td>★★★☆☆ Requiere normalización</td>
+                                <td>★★★★★ No requiere</td>
+                                <td>★☆☆☆☆ Muy sensible</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Manejo de datos faltantes</strong></td>
+                                <td>★★☆☆☆ Requiere imputación</td>
+                                <td>★★★★☆ Maneja nativamente</td>
+                                <td>★★☆☆☆ Requiere imputación</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tamaño dataset ideal</strong></td>
+                                <td>Mediano a grande</td>
+                                <td>Pequeño a grande</td>
+                                <td>Pequeño a mediano</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Riesgo de overfitting</strong></td>
+                                <td>★★☆☆☆ Bajo</td>
+                                <td>★★★★☆ Alto (sin poda)</td>
+                                <td>★★★☆☆ Medio (depende de k)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Principio fundamental:</strong> No existe un algoritmo universalmente superior. La selección depende del problema específico, requisitos de negocio, restricciones computacionales y necesidad de interpretabilidad.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Matriz de decisión -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Matriz de decisión por escenario</h2>
+                <p class="slide-subtitle">Guía práctica para selección de algoritmos</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Escenario de negocio</th>
+                                <th>Algoritmo recomendado</th>
+                                <th>Justificación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Credit scoring regulado</strong></td>
+                                <td>Regresión Logística</td>
+                                <td>Coeficientes interpretables; cumple auditorías regulatorias</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Diagnóstico médico</strong></td>
+                                <td>Árboles de Decisión</td>
+                                <td>Genera reglas "si-entonces" comprensibles para clínicos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Detección fraude tiempo real</strong></td>
+                                <td>Ensemble (XGBoost)</td>
+                                <td>Alta precisión; maneja desbalance de clases; velocidad aceptable</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dataset pequeño (&lt;1,000 muestras)</strong></td>
+                                <td>k-NN o Regresión Logística</td>
+                                <td>Funcionan bien con pocos datos; no requieren grandes datasets</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Máxima precisión en datos tabulares</strong></td>
+                                <td>XGBoost / LightGBM</td>
+                                <td>State-of-the-art en datos estructurados; ganan competencias Kaggle</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sistema de recomendación</strong></td>
+                                <td>k-NN</td>
+                                <td>Encuentra items similares naturalmente; explica por similitud</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Control de calidad industrial</strong></td>
+                                <td>Árboles de Decisión</td>
+                                <td>Ingenieros validan reglas; identifica causas de defectos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Predicción de churn</strong></td>
+                                <td>Regresión Logística o Random Forest</td>
+                                <td>Balance entre interpretabilidad y precisión</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Consideraciones adicionales de rendimiento</h4>
+                    <p><strong>Regresión logística:</strong> Entrenamiento e inferencia muy rápidos, bajo consumo de memoria<br>
+                    <strong>Árboles de decisión:</strong> Rápidos pero propensos a overfitting sin poda adecuada<br>
+                    <strong>k-NN:</strong> No requiere tiempo de entrenamiento pero inferencia computacionalmente costosa (calcula distancias a todos los puntos)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Aplicaciones Financieras -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: sector financiero</h2>
+                <p class="slide-subtitle">Casos de éxito medibles en la industria</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>JPMorgan Chase: COIN (Contract Intelligence)</h4>
+                    <p style="margin-top: 10px;"><strong>Problema:</strong> Revisión manual de miles de documentos de préstamos comerciales</p>
+                    <p><strong>Solución:</strong> Clasificación automatizada de cláusulas contractuales usando ML</p>
+                    <p><strong>Resultado:</strong> Ahorro de <strong>360,000 horas de trabajo anual</strong> — equivalente a más de 40 años de trabajo manual. El CEO Jamie Dimon proyecta impacto total de AI entre $1-1.5 mil millones.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Detección de fraude con IA (Survey Feedzai 2025)</h4>
+                    <p style="margin-top: 10px;"><strong>Adopción masiva:</strong> 90% de instituciones financieras ahora usan detección basada en AI</p>
+                    <p><strong>Desafío emergente:</strong> Más del 50% del fraude actual involucra amenazas generadas por AI (deepfakes, identidades sintéticas)</p>
+                    <p><strong>Algoritmos líderes:</strong> Random Forest y XGBoost consistentemente superan otros métodos, con modelos de stacking alcanzando <strong>95% precisión y 93% recall</strong> en datos transaccionales reales</p>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">$12.5B</div>
+                        <div class="label">pérdidas por fraude solo en EE.UU. (2024)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$40B</div>
+                        <div class="label">proyección anual para 2027 (Gartner)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">10-15%</div>
+                        <div class="label">reducción en pérdidas mediante AI de clasificación</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Las empresas financieras líderes reportan que <strong>la clasificación basada en ML reduce pérdidas por fraude entre 10-15%</strong>, justificando ampliamente la inversión en infraestructura de datos y modelos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Aplicaciones Manufactura -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: manufactura y cadena de suministro</h2>
+                <p class="slide-subtitle">Optimización operacional con impacto medible</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>BMW: Control de calidad con visión computacional</h4>
+                    <p style="margin-top: 10px;"><strong>Transformación:</strong> De control reactivo a predictivo mediante clasificación de defectos</p>
+                    <p><strong>Resultado:</strong> Hasta <strong>60% reducción en defectos vehiculares</strong> y reducción en dos tercios del tiempo para implementar nuevos checks de calidad</p>
+                    <p><strong>Cambio fundamental:</strong> Clasificando probabilidad de defecto ANTES de que ocurra</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Walmart: Optimización de cadena de suministro</h4>
+                    <p style="margin-top: 10px;"><strong>Reconocimiento:</strong> Premio INFORMS Franz Edelman 2023</p>
+                    <p><strong>Impacto:</strong> <strong>$75 millones en ahorros</strong> en un año fiscal y reducción de 72 millones de libras de emisiones CO₂</p>
+                    <p><strong>Técnica:</strong> Clasificación inteligente de rutas y cargas mediante algoritmos de optimización</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Shell: Mantenimiento predictivo a escala</h4>
+                    <p style="margin-top: 10px;"><strong>Escala:</strong> Monitorea más de 10,000 activos procesando <strong>20 mil millones de lecturas de sensores</strong> semanalmente</p>
+                    <p><strong>Output:</strong> 15 millones de predicciones diarias</p>
+                    <p><strong>Valor:</strong> Clasificación de fallas de equipos permite mantenimiento predictivo que evita paradas no planificadas multimillonarias</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>En manufactura, la clasificación predictiva transforma operaciones de <strong>reactivas a proactivas</strong> — detectando problemas antes de que se conviertan en fallas costosas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Aplicaciones Healthcare -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: healthcare y diagnóstico</h2>
+                <p class="slide-subtitle">Salvando vidas con clasificación inteligente</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>La transición dramática en diagnóstico médico</h4>
+                    <p>Se estima que <strong>80% de diagnósticos iniciales</strong> involucrarán análisis AI para 2026, frente al 40% en 2024. Las redes neuronales convolucionales (CNNs) logran <strong>90%+ precisión</strong> en clasificación de tumores desde mamografías.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>Google Health: Detección de cáncer de mama</h4>
+                        <p style="margin-top: 10px;"><strong>Resultado:</strong> 94.6% sensibilidad versus 88.0% de radiólogos humanos</p>
+                        <p><strong>Impacto:</strong> Menos falsos negativos — más vidas salvadas mediante detección temprana</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Clasificación de tumores cerebrales</h4>
+                        <p style="margin-top: 10px;"><strong>Técnica:</strong> CNNs categorizan gliomas y meningiomas desde MRIs</p>
+                        <p><strong>Precisión:</strong> Clínicamente relevante, asistiendo decisiones de tratamiento</p>
+                    </div>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>Framework AI para Parkinson</h4>
+                    <p style="margin-top: 10px;"><strong>Innovación:</strong> Clasificación mediante análisis de video de marcha (cómo camina el paciente)</p>
+                    <p><strong>Precisión:</strong> 90% en detección temprana</p>
+                    <p><strong>Ventaja:</strong> Diagnóstico no invasivo, accesible, de bajo costo</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Consideración crítica:</strong> En healthcare, la clasificación debe ser explicable. Los médicos necesitan entender POR QUÉ el sistema clasificó una imagen como tumoral. Por eso árboles de decisión y regresión logística mantienen relevancia frente a "cajas negras" de deep learning.</p>
+                </div>
+
+                <div class="warning-box" style="margin-top: 15px;">
+                    <p><strong>Lección de IBM Watson for Oncology:</strong> Falló después de $4 mil millones invertidos porque fue entrenado con escenarios hipotéticos en lugar de datos reales de pacientes. Resultado: recomendaciones frecuentemente irrelevantes o peligrosas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Lecciones de fracasos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Lecciones de fracasos documentados</h2>
+                <p class="slide-subtitle">Cuando la clasificación sale mal y por qué</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">95%</div>
+                        <div class="label">de pilotos de AI generativa fallan (MIT, 2025)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">42%</div>
+                        <div class="label">de iniciativas AI fueron canceladas en 2025 vs. 17% en 2024</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">80%</div>
+                        <div class="label">tasa de falla de proyectos AI — casi el doble que IT tradicional</div>
+                    </div>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>Caso Apple Card: Discriminación algorítmica</h4>
+                    <p style="margin-top: 10px;"><strong>Problema:</strong> El algoritmo de credit scoring ofrecía límites de crédito significativamente menores a mujeres que a hombres con perfiles financieros idénticos</p>
+                    <p><strong>Causa raíz:</strong> Aunque el algoritmo era "ciego al género" (no usaba género directamente), utilizaba variables proxy que correlacionaban con género</p>
+                    <p><strong>Lección:</strong> La equidad algorítmica requiere auditoría activa de resultados, no solo ceguera a variables protegidas</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>YouTube durante COVID-19: Falsos positivos masivos</h4>
+                    <p style="margin-top: 10px;"><strong>Problema:</strong> Clasificación automatizada de contenido etiquetó erróneamente contenido educativo legítimo sobre COVID-19 como desinformación</p>
+                    <p><strong>Causa raíz:</strong> Clasificadores entrenados con datos pre-pandemia no generalizaron a nuevo vocabulario y contexto</p>
+                    <p><strong>Lección:</strong> Clasificación de alto impacto requiere supervisión humana estructurada</p>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Causas raíz identificadas (RAND, 65 entrevistas con data scientists)</h4>
+                    <ul>
+                        <li>Desalineación con stakeholders de negocio</li>
+                        <li>Datos insuficientes o de baja calidad</li>
+                        <li>Enfoque en tecnología sobre problemas reales</li>
+                        <li>Pobre integración con flujos de trabajo existentes</li>
+                        <li>Falta de talento técnico adecuado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: AutoML -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">AutoML: Democratización de la clasificación</h2>
+                <p class="slide-subtitle">Herramientas que automatizan la selección de algoritmos</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Qué es AutoML</h4>
+                    <p>Automated Machine Learning (AutoML) automatiza las tareas repetitivas del ML: selección de algoritmos, ajuste de hiperparámetros, ingeniería de características, y evaluación de modelos. La novedad de 2025 son <strong>"AI agents" con LLM</strong> que permiten interacción en lenguaje natural durante todo el flujo.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Líderes del mercado (Benchmark 2025)</h3>
+                        <p><strong>AutoGluon:</strong> Mejor solución general, balanceando precisión y eficiencia computacional</p>
+                        <p style="margin-top: 10px;"><strong>Auto-sklearn:</strong> Destaca en rendimiento predictivo puro — máxima precisión</p>
+                        <p style="margin-top: 10px;"><strong>H2O AutoML:</strong> Interfaz amigable, excelente para usuarios de negocio</p>
+                        <p style="margin-top: 10px;"><strong>Google Vertex AI:</strong> Integración con ecosistema Google Cloud</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Ventajas de AutoML</h3>
+                        <ul>
+                            <li>Reduce tiempo de desarrollo en 40-60%</li>
+                            <li>Democratiza ML para no-expertos</li>
+                            <li>Explora más combinaciones que humanos</li>
+                            <li>Estandariza mejores prácticas</li>
+                            <li>Reduce errores humanos en configuración</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 20px;">
+                    <h4>La novedad de 2025: Agentes conversacionales</h4>
+                    <p style="margin-top: 10px;">En lugar de configurar parámetros técnicos, ahora puedes decir: "Tengo un dataset de transacciones de clientes. Quiero predecir quiénes abandonarán en los próximos 3 meses. Prioriza recall sobre precision."</p>
+                    <p>El agente LLM automáticamente: limpia datos, selecciona características, prueba múltiples algoritmos, ajusta hiperparámetros, y explica las decisiones tomadas.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Cuándo usar AutoML:</strong> Prototipado rápido, establecer baseline de rendimiento, cuando no hay expertos ML disponibles. <strong>Cuándo NO usarlo:</strong> Problemas altamente especializados, cuando interpretabilidad extrema es crítica, datasets con estructura muy inusual.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Explainable AI -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Explainable AI (XAI)</h2>
+                <p class="slide-subtitle">Interpretando modelos de clasificación complejos</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Por qué XAI es crítico en 2026</h4>
+                    <p>El EU AI Act ahora <strong>exige documentación de decisiones algorítmicas</strong>, especialmente en aplicaciones de alto riesgo (crédito, empleo, justicia, healthcare). XAI proporciona las herramientas para cumplir estos requisitos regulatorios.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>SHAP (SHapley Additive exPlanations)</h3>
+                        <p><strong>Qué hace:</strong> Asigna un valor de contribución a cada característica para cada predicción individual</p>
+                        <p style="margin-top: 10px;"><strong>Base teórica:</strong> Teoría de juegos cooperativos — "qué tan importante fue cada jugador para el resultado"</p>
+                        <p style="margin-top: 10px;"><strong>Ventaja:</strong> Funciona con cualquier modelo (incluso cajas negras como redes neuronales)</p>
+                        <p style="margin-top: 10px;"><strong>Uso:</strong> "Esta solicitud de préstamo fue rechazada porque ratio deuda/ingreso contribuyó -0.35 a la probabilidad de aprobación"</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>LIME (Local Interpretable Model-agnostic Explanations)</h3>
+                        <p><strong>Qué hace:</strong> Crea un modelo simple (lineal) localmente alrededor de una predicción específica</p>
+                        <p style="margin-top: 10px;"><strong>Analogía:</strong> "Aunque el terreno global es montañoso, localmente donde estás parado es plano"</p>
+                        <p style="margin-top: 10px;"><strong>Ventaja:</strong> Explicaciones intuitivas en lenguaje de características originales</p>
+                        <p style="margin-top: 10px;"><strong>Uso:</strong> "Para ESTE cliente específico, los 3 factores más importantes fueron: ingreso anual, historial crediticio, antigüedad laboral"</p>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top: 20px;">
+                    <p><strong>Brecha preocupante (MIT SERC, 2025):</strong> Solo 0.7% de papers de XAI en la última década validaron sus métodos con evaluación humana. Esto indica una brecha significativa entre teoría académica y práctica empresarial.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>SHAP y LIME se han convertido en estándares industriales. Implementarlos no es opcional — es requisito para cumplimiento regulatorio y confianza del usuario.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Herramientas interactivas - Parte 1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas (verificadas enero 2026)</h2>
+                <p class="slide-subtitle">Visualizadores de algoritmos de clasificación</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>1. TensorFlow Playground (playground.tensorflow.org)</h4>
+                    <p style="margin-top: 10px;"><strong>Qué hace:</strong> Gold standard para demostrar cómo las redes neuronales aprenden fronteras de decisión</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Ajustar capas ocultas, neuronas, tasa de aprendizaje</li>
+                        <li>Funciones de activación (ReLU, Tanh, Sigmoid, Linear)</li>
+                        <li>Regularización (L1, L2)</li>
+                        <li>Observar formación de fronteras en tiempo real</li>
+                        <li>Genera URLs compartibles</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Uso recomendado:</strong> Ideal para iniciar cualquier clase — completamente visual, no requiere código</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>2. LearnWithML (learnwithml.com)</h4>
+                    <p style="margin-top: 10px;"><strong>Qué hace:</strong> Comparación side-by-side de múltiples algoritmos de clasificación</p>
+                    <p><strong>Algoritmos incluidos:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>k-NN (k y métrica ajustables)</li>
+                        <li>SVM (kernel y C ajustables)</li>
+                        <li>Árboles de decisión (profundidad máxima ajustable)</li>
+                        <li>Random Forest</li>
+                        <li>Regresión logística</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Características:</strong> Generar datos aleatorios o cargar CSV propios</p>
+                    <p style="margin-top: 10px;"><strong>Uso recomendado:</strong> Perfecto para discusiones de selección de algoritmos — ver cómo diferentes métodos crean fronteras de decisión distintas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Herramientas interactivas - Parte 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas (continuación)</h2>
+                <p class="slide-subtitle">Más plataformas para experimentación</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>3. ML Visualizer (ml-visualiser.vercel.app)</h4>
+                    <p style="margin-top: 10px;"><strong>Qué hace:</strong> Visualizaciones integrales de múltiples aspectos de ML</p>
+                    <p><strong>Incluye:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Fronteras de decisión de clasificadores</li>
+                        <li>Gradiente descendente animado</li>
+                        <li>Arquitectura de redes neuronales</li>
+                        <li>Procesamiento CNN (convoluciones)</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Estado:</strong> Actualizado en 2025, diseñado específicamente para estudiantes y educadores</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>4. ML Playground (ml-playground.com)</h4>
+                    <p style="margin-top: 10px;"><strong>Qué hace:</strong> Sandbox educativo con feedback visual interactivo</p>
+                    <p><strong>Soporta:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>k-NN con k ajustable</li>
+                        <li>Perceptrón simple</li>
+                        <li>SVM con diferentes kernels</li>
+                        <li>Redes neuronales básicas</li>
+                        <li>Árboles de decisión</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Uso recomendado:</strong> Excelente para experimentación libre — permite a estudiantes "jugar" con parámetros y ver resultados inmediatos</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Todas estas herramientas:</strong> No requieren instalación, funcionan en el navegador, son completamente gratuitas, y generan visualizaciones en tiempo real.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Plataformas sin código -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Plataformas para construir clasificadores sin código</h2>
+                <p class="slide-subtitle">Herramientas de producción accesibles</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Google Teachable Machine (teachablemachine.withgoogle.com)</h4>
+                    <p style="margin-top: 10px;"><strong>Qué hace:</strong> Crear clasificadores de imagen, audio y pose en minutos usando solo el navegador y webcam</p>
+                    <p><strong>Estadísticas impresionantes:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Más de 125,000 modelos creados</li>
+                        <li>182,000+ usuarios en 201 países</li>
+                        <li>Usado en Stanford d.school, NYU ITP, MIT Media Lab</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Casos de uso:</strong></p>
+                    <ul style="font-size: 14px;">
+                        <li>Clasificación de productos por imagen</li>
+                        <li>Control de calidad visual</li>
+                        <li>Reconocimiento de gestos</li>
+                        <li>Clasificación de sonidos</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Exportación:</strong> Modelos se pueden exportar a TensorFlow.js para aplicaciones reales</p>
+                    <p style="margin-top: 10px;"><strong>⭐ Recomendación máxima para proyectos prácticos del curso</strong></p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Amazon SageMaker Canvas</h4>
+                        <p style="margin-top: 8px;">Construcción de modelos ML con interfaz point-and-click. Conexión a fuentes de datos, detección automática de características, predicciones sin código. Requiere cuenta AWS pero tiene tier gratuito.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>BigML (bigml.com)</h4>
+                        <p style="margin-top: 8px;">Clasificación, regresión, clustering y detección de anomalías con interfaz visual. Tier gratuito disponible para experimentación.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Estas plataformas democratizan el ML — permiten a profesionales de negocios construir y desplegar clasificadores sin escribir código.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Tabla de prioridades -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Priorización de herramientas para el curso</h2>
+                <p class="slide-subtitle">Tabla de referencia rápida</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Prioridad</th>
+                                <th>Herramienta</th>
+                                <th>URL</th>
+                                <th>Mejor uso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>TensorFlow Playground</td>
+                                <td>playground.tensorflow.org</td>
+                                <td>Demostrar fronteras de decisión y aprendizaje en tiempo real</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>Google Teachable Machine</td>
+                                <td>teachablemachine.withgoogle.com</td>
+                                <td>Proyectos prácticos sin código — clasificación de imagen/audio/pose</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>LearnWithML</td>
+                                <td>learnwithml.com</td>
+                                <td>Comparar algoritmos side-by-side</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>ML Visualizer</td>
+                                <td>ml-visualiser.vercel.app</td>
+                                <td>Visualización integral de múltiples conceptos ML</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>ML Playground</td>
+                                <td>ml-playground.com</td>
+                                <td>Experimentación libre con parámetros</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6</strong></td>
+                                <td>Kaggle Notebooks</td>
+                                <td>kaggle.com</td>
+                                <td>Tutoriales interactivos con datasets clásicos (Iris, Titanic)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Flujo recomendado para demostración en clase</h3>
+                    <ul>
+                        <li><strong>Paso 1:</strong> Usar TensorFlow Playground para explicar cómo se forman fronteras de decisión</li>
+                        <li><strong>Paso 2:</strong> Mostrar LearnWithML para comparar k-NN vs. árboles vs. regresión logística en mismo dataset</li>
+                        <li><strong>Paso 3:</strong> Demostrar Google Teachable Machine creando un clasificador simple en vivo (ej. reconocer gestos con webcam)</li>
+                        <li><strong>Paso 4:</strong> Mostrar cómo exportar el modelo y potencialmente integrarlo</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Todas estas herramientas están verificadas como funcionales en enero 2026 y no requieren registro para uso básico.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Conclusiones -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Conclusiones: los fundamentos que perduran</h2>
+                <p class="slide-subtitle">Conceptos clave para llevar</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>El panorama de clasificación en 2026 presenta una paradoja productiva: mientras el deep learning acapara titulares, <strong>los algoritmos clásicos dominan aplicaciones empresariales reales</strong>. JPMorgan, BMW, Walmart y Shell implementan soluciones millonarias basadas en regresión logística, árboles de decisión y métodos ensemble.</p>
+                </div>
+
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Competencia crítica 1</h4>
+                        <p style="margin-top: 8px;"><strong>Selección fundamentada de algoritmos</strong> según el problema específico. No existe algoritmo universalmente superior.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Competencia crítica 2</h4>
+                        <p style="margin-top: 8px;"><strong>Interpretabilidad como requisito de negocio.</strong> En finanzas, salud y contratación, explicar decisiones no es opcional.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Competencia crítica 3</h4>
+                        <p style="margin-top: 8px;"><strong>Conciencia de limitaciones y sesgos.</strong> El 95% de fracaso en pilotos AI demuestra que tecnología sin estrategia destruye valor.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Lo que dominan ahora</h3>
+                    <ul>
+                        <li><strong>Tres algoritmos fundamentales:</strong> regresión logística, árboles de decisión, k-NN — sus fortalezas, limitaciones y casos de uso</li>
+                        <li><strong>Matriz de decisión:</strong> cuándo usar cada algoritmo según requisitos de negocio</li>
+                        <li><strong>Aplicaciones reales:</strong> desde credit scoring hasta diagnóstico médico, control de calidad y detección de fraude</li>
+                        <li><strong>Herramientas prácticas:</strong> plataformas interactivas para experimentar sin código</li>
+                        <li><strong>XAI y AutoML:</strong> tendencias que democratizan y hacen auditable el ML</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p style="text-align: center; font-size: 1.3em;">Ahora aplicarán todo lo aprendido en un <strong>caso práctico real</strong> donde seleccionarán y justificarán el algoritmo apropiado para un problema de negocio.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
