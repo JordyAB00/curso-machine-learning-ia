@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprendizaje Supervisado: Regresión - Semana 5</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #f5f5f7;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 80px 140px 80px;
+            background: #f5f5f7;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-header {
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 20px;
+            color: #6e6e73;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2d1b4e, #00d4ff);
+            border-radius: 10px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-box h3 {
+            font-size: 24px;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .content-box p {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .content-box li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-size: 20px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f0f2, #ffffff);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight-box p {
+            font-size: 17px;
+            color: #2d1b4e;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .key-point {
+            background: #ffffff;
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e5e7;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .key-point h4 {
+            color: #2d1b4e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .key-point p {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(45, 27, 78, 0.15);
+            border-color: #00d4ff;
+        }
+
+        .comparison-card h4 {
+            font-size: 19px;
+            color: #2d1b4e;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card p {
+            font-size: 14px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .four-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        strong {
+            color: #2d1b4e;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 50%, #ffffff 100%);
+            padding: 60px 80px 140px 80px;
+        }
+
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff, #2d1b4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cover-subtitle {
+            font-size: 32px;
+            color: #6e6e73;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .cover-info {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #6e6e73;
+            font-size: 16px;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d1b4e, #00d4ff);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        tr:hover {
+            background: #f8f8ff;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px 140px 24px;
+            }
+
+            .slide-title {
+                font-size: 32px;
+            }
+
+            .slide-subtitle {
+                font-size: 16px;
+            }
+
+            .cover-title {
+                font-size: 42px;
+            }
+
+            .cover-subtitle {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stats-grid,
+            .two-columns,
+            .three-columns,
+            .four-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">18</span>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Portada -->
+        <div class="slide cover-slide active">
+            <h1 class="cover-title">Aprendizaje supervisado: regresión</h1>
+            <p class="cover-subtitle">Semana 5: Predicción numérica en el mundo empresarial</p>
+            <div class="cover-info">
+                <p>Microcredencial en Inteligencia Artificial y Análisis de Datos<br>
+                Universidad Latinoamericana de Ciencia y Tecnología<br>
+                Febrero 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Agenda de la sesión</h2>
+                <p class="slide-subtitle">La herramienta de predicción numérica más utilizada en la industria</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">116M</div>
+                        <div class="label">propiedades valuadas por Zillow con regresión (error 1.83%)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">122M</div>
+                        <div class="label">clientes de Nubank evaluados con modelos de regresión</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">98.24%</div>
+                        <div class="label">precisión de Walmart en predicción de demanda con XGBoost</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 30px;">
+                    <h3>Lo que aprenderemos hoy</h3>
+                    <ul>
+                        <li>Qué es regresión y en qué se diferencia de clasificación</li>
+                        <li>Regresión lineal simple y múltiple: fundamentos e interpretación</li>
+                        <li>Regresión polinomial: capturando relaciones no lineales</li>
+                        <li>Métricas de evaluación: R², MSE, RMSE, MAE</li>
+                        <li>Aplicaciones reales en finanzas, retail, real estate y manufactura</li>
+                        <li>Herramientas web interactivas para experimentar con regresión</li>
+                        <li>Tendencias actuales: gradient boosting, AutoML y LLMs con datos tabulares</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Hoy dominarán la técnica fundamental para responder preguntas del tipo "¿cuánto?" y "¿cuántos?" — desde predecir precios hasta estimar ventas futuras.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Qué es regresión -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Qué es la regresión en machine learning</h2>
+                <p class="slide-subtitle">Predicción de valores numéricos continuos</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Definición fundamental</h4>
+                    <p>La regresión es una técnica de aprendizaje supervisado que predice <strong>un valor numérico continuo</strong> a partir de variables de entrada. Su objetivo es encontrar la relación matemática entre variables independientes (features) y una variable dependiente (target) para hacer predicciones cuantitativas.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Pregunta clave que responde</h3>
+                        <p style="margin-bottom: 15px;"><strong>Si la pregunta es "¿cuánto?" o "¿cuántos?", la respuesta probablemente requiere regresión.</strong></p>
+                        <ul>
+                            <li>¿Cuánto costará esta propiedad en Escazú?</li>
+                            <li>¿Cuántas ventas tendremos el próximo mes?</li>
+                            <li>¿Cuánto consumirá de electricidad este edificio?</li>
+                            <li>¿Cuántos turistas llegarán al aeropuerto?</li>
+                            <li>¿Cuál será el ingreso de este cliente?</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Ejemplos concretos</h3>
+                        <ul>
+                            <li><strong>Finanzas:</strong> Predecir el precio de acciones, el monto de un préstamo óptimo</li>
+                            <li><strong>Real estate:</strong> Estimar el valor de mercado de una propiedad</li>
+                            <li><strong>Retail:</strong> Proyectar ventas mensuales de cada producto</li>
+                            <li><strong>Manufactura:</strong> Predecir vida útil restante de equipos</li>
+                            <li><strong>Salud:</strong> Estimar duración de hospitalización</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La regresión no solo predice números — proporciona insights sobre <strong>cómo y cuánto influye cada variable</strong> en el resultado, permitiendo tomar decisiones informadas de negocio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Regresión vs Clasificación -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Diferencias fundamentales: regresión vs clasificación</h2>
+                <p class="slide-subtitle">Dos técnicas, dos tipos de predicción</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dimensión</th>
+                                <th>Regresión</th>
+                                <th>Clasificación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Tipo de salida</strong></td>
+                                <td>Número continuo (precio, temperatura, ingresos)</td>
+                                <td>Categoría discreta (sí/no, spam/no spam, tipo A/B/C)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pregunta que responde</strong></td>
+                                <td>¿Cuánto? ¿Cuántos?</td>
+                                <td>¿Qué es? ¿A qué grupo pertenece?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Métricas de evaluación</strong></td>
+                                <td>R², MSE, RMSE, MAE</td>
+                                <td>Accuracy, Precision, Recall, F1-Score</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ejemplo en finanzas</strong></td>
+                                <td>¿Cuánto será el ingreso de este cliente?</td>
+                                <td>¿Pagará o no pagará el préstamo?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ejemplo en salud</strong></td>
+                                <td>¿Cuántos días estará hospitalizado?</td>
+                                <td>¿Tiene o no tiene la enfermedad?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ejemplo en retail</strong></td>
+                                <td>¿Cuántas unidades se venderán?</td>
+                                <td>¿El cliente comprará o no este producto?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Zillow (Regresión)</h4>
+                        <p style="margin-top: 10px;">Su modelo Zestimate predice el valor de mercado de una casa como un <strong>número continuo en dólares</strong> — por ejemplo, $347,500. Utiliza cientos de variables para estimar con error mediano de solo 1.83%.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>FICO (Clasificación)</h4>
+                        <p style="margin-top: 10px;">El puntaje de crédito FICO clasifica a los solicitantes en <strong>niveles de riesgo</strong> de impago (bajo, medio, alto). Usado por el 90% de los prestamistas en EE.UU.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>A veces la frontera es difusa: predecir si un cliente gastará más de $100 es clasificación, pero predecir cuánto gastará exactamente es regresión. La clave está en si el resultado es un número en una escala continua o una categoría discreta.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Regresión lineal - Conceptos básicos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Regresión lineal: el modelo interpretable por excelencia</h2>
+                <p class="slide-subtitle">Simple y múltiple</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Regresión lineal simple</h4>
+                    <p>Modela la relación entre <strong>una variable independiente (x)</strong> y una dependiente (y) mediante una línea recta: <strong>y = β₀ + β₁x</strong></p>
+                    <p style="margin-top: 8px;">Ejemplo: Predecir el precio de un alquiler vacacional basándose únicamente en la distancia a la playa.</p>
+                </div>
+
+                <div class="key-point">
+                    <h4>Regresión lineal múltiple</h4>
+                    <p>Extiende el concepto a <strong>varias variables independientes</strong>: <strong>y = β₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ</strong></p>
+                    <p style="margin-top: 8px;">Ejemplo: Predecir el precio del alquiler considerando distancia a la playa, número de habitaciones, calificación de reseñas, temporada y si tiene piscina.</p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="content-box">
+                        <h3>Interpretabilidad directa</h3>
+                        <p>Cada coeficiente β tiene una interpretación de negocio clara:</p>
+                        <p style="margin-top: 10px; font-style: italic;">"Por cada habitación adicional, el precio nocturno aumenta en $X, manteniendo todo lo demás constante."</p>
+                        <p style="margin-top: 10px;">Esta interpretabilidad es la razón por la que regresión lineal sigue siendo el modelo más utilizado en finanzas y banca, donde la <strong>explicabilidad es requisito regulatorio</strong>.</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Ventajas principales</h3>
+                        <ul>
+                            <li>Altamente interpretable — cada coeficiente cuenta una historia</li>
+                            <li>Rápida de entrenar incluso con millones de datos</li>
+                            <li>Cumple requisitos regulatorios de explicabilidad</li>
+                            <li>Sirve como excelente línea base para comparar modelos más complejos</li>
+                            <li>Bajo consumo de memoria — ideal para producción</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>FICO usa regresión logística (una extensión de regresión lineal) para credit scoring porque los reguladores pueden auditar cada decisión. Un banco puede explicar: "El préstamo fue rechazado porque el ratio deuda/ingreso supera nuestro umbral, con peso de 2.3 en el modelo."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Regresión polinomial -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Regresión polinomial</h2>
+                <p class="slide-subtitle">Capturando relaciones no lineales</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Cómo funciona</h4>
+                    <p>La regresión polinomial captura relaciones no lineales añadiendo <strong>potencias de las variables</strong>: <strong>y = β₀ + β₁x + β₂x² + β₃x³ + ...</strong></p>
+                    <p style="margin-top: 8px;">Mientras la regresión lineal ajusta una línea recta, la polinomial ajusta una <strong>curva</strong>.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Cuándo usar regresión polinomial</h3>
+                        <p>Útil cuando la relación entre variables no es proporcional. Ejemplo clásico:</p>
+                        <p style="margin-top: 10px;"><strong>Marketing y ventas:</strong> El efecto del gasto publicitario en las ventas suele seguir un patrón de <strong>rendimientos decrecientes</strong> — los primeros $10,000 en publicidad generan mucho impacto, pero los siguientes $10,000 generan menos.</p>
+                        <p style="margin-top: 10px;">Una línea recta no capturaría este patrón, pero un polinomio de grado 2 sí.</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Limitaciones importantes</h3>
+                        <ul>
+                            <li><strong>Alto riesgo de overfitting:</strong> Con grados elevados (≥4), el modelo puede memorizar ruido</li>
+                            <li><strong>Difícil de interpretar:</strong> ¿Qué significa β₃ en x³?</li>
+                            <li><strong>Inestable en los extremos:</strong> Extrapolación peligrosa fuera del rango de datos</li>
+                            <li>Requiere más datos que regresión lineal</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>Regresión lineal</th>
+                                <th>Regresión polinomial</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Forma</strong></td>
+                                <td>Línea recta</td>
+                                <td>Curva</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Complejidad</strong></td>
+                                <td>Baja (fácil de interpretar)</td>
+                                <td>Mayor (difícil con grados altos)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Riesgo de overfitting</strong></td>
+                                <td>Bajo</td>
+                                <td>Alto (especialmente grados ≥ 4)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cuándo usarla</strong></td>
+                                <td>Relaciones proporcionales directas</td>
+                                <td>Relaciones con curvaturas, saturación, rendimientos decrecientes</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ejemplo</strong></td>
+                                <td>Más m² → más precio (proporcional)</td>
+                                <td>Más publicidad → más ventas, pero con techo</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p><strong>Regla práctica:</strong> Empezar siempre con regresión lineal como línea base. Solo pasar a polinomial si los residuos muestran patrones sistemáticos (curvas) que la línea recta no captura.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Métricas de evaluación -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Métricas de evaluación de regresión</h2>
+                <p class="slide-subtitle">Cómo medir qué tan bien predice el modelo</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="key-point">
+                        <h4>R² (Coeficiente de determinación)</h4>
+                        <p>Indica qué proporción de la variación en la variable dependiente es explicada por el modelo.</p>
+                        <p style="margin-top: 8px;"><strong>Rango:</strong> 0 a 1 (más cercano a 1 = mejor ajuste)</p>
+                        <p style="margin-top: 8px;"><strong>Interpretación:</strong> Un R² de 0.85 significa que el modelo explica el 85% de la variabilidad en los datos.</p>
+                    </div>
+
+                    <div class="key-point">
+                        <h4>MSE (Mean Squared Error)</h4>
+                        <p>Promedio de los errores al cuadrado.</p>
+                        <p style="margin-top: 8px;"><strong>Característica:</strong> Penaliza errores grandes más que pequeños.</p>
+                        <p style="margin-top: 8px;"><strong>Cuándo usarlo:</strong> Cuando errores grandes son especialmente costosos para el negocio.</p>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="key-point">
+                        <h4>RMSE (Root Mean Squared Error)</h4>
+                        <p>Raíz cuadrada del MSE.</p>
+                        <p style="margin-top: 8px;"><strong>Ventaja:</strong> Está en las mismas unidades que la variable objetivo. Si predicen precios en dólares, el RMSE también está en dólares.</p>
+                        <p style="margin-top: 8px;"><strong>Ejemplo real:</strong> Zillow reporta un RMSE equivalente a un error mediano de 1.83% para propiedades en venta activa.</p>
+                    </div>
+
+                    <div class="key-point">
+                        <h4>MAE (Mean Absolute Error)</h4>
+                        <p>Promedio del valor absoluto de los errores.</p>
+                        <p style="margin-top: 8px;"><strong>Ventaja:</strong> Más robusto ante valores atípicos que MSE/RMSE.</p>
+                        <p style="margin-top: 8px;"><strong>Interpretación:</strong> Más intuitivo — "en promedio, nos equivocamos por $X".</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Conceptos adicionales importantes</h3>
+                    <p><strong>Función de costo (Loss Function):</strong> Mide qué tan lejos están las predicciones del modelo respecto a los valores reales. El objetivo del entrenamiento es minimizar esta función.</p>
+                    <p style="margin-top: 10px;"><strong>Gradiente descendente:</strong> El algoritmo que el modelo usa para "aprender". Imaginen bajar una montaña con niebla: en cada paso, el algoritmo evalúa la pendiente del terreno y da un paso en la dirección que desciende más. La <strong>tasa de aprendizaje</strong> controla el tamaño de cada paso.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>No existe una métrica universalmente superior. La selección depende del problema: si errores grandes son muy costosos, usar MSE/RMSE. Si quieren robustez ante outliers, usar MAE. Para comunicar con stakeholders, R² es la más intuitiva.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Aplicaciones - Finanzas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: sector financiero</h2>
+                <p class="slide-subtitle">La regresión sigue siendo la reina del riesgo crediticio</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>FICO: El puntaje de crédito más usado del mundo</h4>
+                    <p style="margin-top: 10px;">Utiliza modelos basados en <strong>regresión logística</strong> para generar el puntaje empleado por el 90% de los principales prestamistas en EE.UU.</p>
+                    <p><strong>Aunque FICO Score 10T incorpora datos de tendencia crediticia y descubrimiento de features asistido por IA, el modelo final sigue siendo un scorecard de regresión</strong> por requisitos regulatorios de explicabilidad.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Nubank: 122+ millones de clientes en Latinoamérica</h4>
+                    <p style="margin-top: 10px;">El banco digital más grande de la región emplea un sofisticado ecosistema de modelos de regresión:</p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Modelos de supervivencia que estiman probabilidad de incumplimiento a lo largo del tiempo</li>
+                        <li>Modelos fundacionales basados en transformers que procesan secuencias de transacciones</li>
+                        <li>Embeddings que alimentan modelos de regresión para scoring crediticio</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Resultado:</strong> Crecimiento compuesto anual del 70% en ganancias brutas entre Q3 2021 y Q3 2025.</p>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <div class="number">62%</div>
+                        <div class="label">reducción en tiempo de procesamiento de préstamos con ML</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">41%</div>
+                        <div class="label">disminución en costos de suscripción</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">30-40%</div>
+                        <div class="label">mejora en precisión de decisiones de riesgo (JPMorgan)</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>JPMorgan Chase y Goldman Sachs utilizan regresión lineal y logística como modelos fundamentales en sus divisiones cuantitativas. La interpretabilidad no es opcional — es requisito regulatorio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Aplicaciones - Retail -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: retail y predicción de demanda</h2>
+                <p class="slide-subtitle">Precisión milimétrica con impacto de miles de millones</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Walmart: El sistema de forecasting más sofisticado del mundo</h4>
+                    <p style="margin-top: 10px;">Combina regresión con redes neuronales recurrentes multi-horizonte. Sus modelos de predicción de demanda basados en <strong>XGBoost</strong> alcanzan <strong>98.24% de precisión</strong>.</p>
+                    <p style="margin-top: 10px;"><strong>Impacto tangible:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>30 millones de millas de conducción eliminadas mediante optimización de rutas</li>
+                        <li>Negociación automatizada con proveedores con 68% de tasa de éxito y 3% de ahorro promedio</li>
+                        <li>8% de crecimiento anual en beneficios atribuido a IA/ML</li>
+                    </ul>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Amazon: 35% de ingresos de recomendaciones basadas en regresión</h4>
+                    <p style="margin-top: 10px;">Utiliza modelos de regresión y aprendizaje profundo para:</p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Predicción de demanda por producto y región</li>
+                        <li>Recomendaciones personalizadas (aproximadamente 35% de ingresos totales)</li>
+                        <li>Precios dinámicos basados en demanda predicha</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Dato relevante para Costa Rica:</strong> Amazon Costa Rica emplea a más de 10,000 personas y es el mayor empleador privado del país, utilizando ML extensivamente.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Mercado Libre: 144 millones de usuarios activos</h4>
+                    <p style="margin-top: 10px;">El marketplace más grande de Latinoamérica opera <strong>"Fury"</strong>, una plataforma de ML que despliega modelos de regresión y clasificación a escala masiva.</p>
+                    <p><strong>GenAds:</strong> Su solución aumentó el click-through rate en 25%</p>
+                    <p><strong>Capacidad:</strong> Procesan hasta 2.2 millones de transacciones por segundo en picos de demanda</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Aplicaciones - Real Estate -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: real estate</h2>
+                <p class="slide-subtitle">Zillow y el modelo de valuación más grande del mundo</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Zestimate de Zillow: 116 millones de hogares valuados</h4>
+                    <p>El modelo de valuación automatizada más grande del mundo, combinando redes neuronales, XGBoost, LightGBM y regresión lineal.</p>
+                </div>
+
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Cómo funciona</h3>
+                        <ul>
+                            <li>Procesa cientos de variables: metros cuadrados, ubicación, ventas comparables, tendencias de mercado</li>
+                            <li>Utiliza 7.5 millones de modelos estadísticos y de ML</li>
+                            <li>Actualiza valuaciones constantemente con nuevos datos</li>
+                            <li>Incorpora datos de transacciones públicas, características de propiedades y comportamiento de usuarios</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Precisión actual</h3>
+                        <ul>
+                            <li><strong>Error mediano de 1.83%</strong> para propiedades en venta activa</li>
+                            <li>7.01% para propiedades fuera del mercado</li>
+                            <li>Ha reducido su margen de error del 14% original al 5% actual</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top: 20px;">
+                    <p><strong>Lección crítica del fracaso iBuying de Zillow:</strong> Pérdida de $880M en 2021 al intentar comprar y revender casas basándose en sus modelos. Demostró que la valuación algorítmica tiene límites — factores humanos, negociación y condiciones de mercado impredecibles afectan el precio real de transacción.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>A pesar del fracaso en iBuying, Zestimate sigue siendo extremadamente valioso como herramienta informativa para compradores, vendedores y agentes. El error no fue en el modelo de regresión, sino en la estrategia de negocio que asumía que predicción perfecta equivalía a ejecución perfecta.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Aplicaciones - Manufactura -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Aplicaciones reales: manufactura y logística</h2>
+                <p class="slide-subtitle">Mantenimiento predictivo ahorrando miles de millones</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Siemens: Predicción de vida útil de componentes</h4>
+                    <p style="margin-top: 10px;">Aplica regresión para predecir la <strong>vida útil restante</strong> de componentes en turbinas de gas, manufactura electrónica y turbinas eólicas.</p>
+                    <p><strong>Plataforma Senseye:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>25% reducción en costos de mantenimiento</li>
+                        <li>30% disminución en tiempo de inactividad no programado</li>
+                        <li>Ahorro estimado de millones de dólares anuales por planta</li>
+                    </ul>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>GE Aviation: Monitoreo de motores en tiempo real</h4>
+                    <p style="margin-top: 10px;">Sensores de vibración y temperatura alimentan modelos de regresión que predicen:</p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Probabilidad de falla en próximas X horas de vuelo</li>
+                        <li>Componentes específicos que requieren atención</li>
+                        <li>Ventana óptima para mantenimiento preventivo</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Resultado:</strong> Las aerolíneas que usan su sistema reportan hasta 40% menos de remociones no programadas de motores.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Maersk: Optimización de cadena de suministro en Latinoamérica</h4>
+                    <p style="margin-top: 10px;">Utiliza analítica predictiva basada en regresión para:</p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Anticipar fluctuaciones de demanda</li>
+                        <li>Redirigir envíos proactivamente</li>
+                        <li>Optimizar rutas de contenedores</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Impacto:</strong> McKinsey estima que las empresas que digitalizan agresivamente sus cadenas de suministro pueden incrementar su EBIT hasta en 3.2% anual.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Costa Rica y el ecosistema -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Costa Rica: ecosistema de ML en crecimiento</h2>
+                <p class="slide-subtitle">Oportunidades locales y regionales</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Liderazgo regional en IA</h4>
+                    <p>Costa Rica fue el <strong>primer país centroamericano en desarrollar una estrategia nacional de IA</strong> (agosto 2023, con apoyo de UNESCO).</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">75%</div>
+                        <div class="label">de empresas multinacionales de servicios implementan tecnologías basadas en IA</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">35%</div>
+                        <div class="label">de empresas de tecnología 4.0 proveen servicios de IA</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$30.20B</div>
+                        <div class="label">proyección del mercado de IA en Latinoamérica para 2033</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>Empresas multinacionales en Costa Rica</h4>
+                        <ul style="font-size: 14px; margin-top: 8px;">
+                            <li><strong>Johnson Controls:</strong> Centro de Excelencia para OpenBlue con diagnósticos remotos y mantenimiento predictivo</li>
+                            <li><strong>Tech Data (TD Synnex):</strong> Modelos predictivos para clientes OEM valorados en miles de millones</li>
+                            <li><strong>Amazon:</strong> Mayor empleador privado (10,000+ empleados) usando ML extensivamente</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Empresas locales innovadoras</h4>
+                        <ul style="font-size: 14px; margin-top: 8px;">
+                            <li><strong>Colono Agri-Tech:</strong> ML en agricultura de precisión con drones y sistemas autónomos</li>
+                            <li><strong>Akurey:</strong> Soluciones de ML para optimización de procesos</li>
+                            <li><strong>Cocobolo CR:</strong> Analítica de e-commerce con ML</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>El mercado de IA en Latinoamérica fue valorado en $4.71 mil millones en 2024 y se proyecta a $30.20 mil millones para 2033 (CAGR 22.9%). La <strong>analítica predictiva</strong> — donde la regresión es la técnica dominante — representó el 42.09% del mercado de data analytics en la región.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Tendencias 2025-2026 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Tendencias y desarrollos recientes (2025-2026)</h2>
+                <p class="slide-subtitle">El estado actual de la regresión en ML</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Gradient boosting sigue dominando datos tabulares</h4>
+                    <p>Un benchmark exhaustivo de 2025 evaluando <strong>20 modelos en 111 datasets</strong> confirma que los métodos de ensamble basados en árboles — <strong>XGBoost, LightGBM y CatBoost</strong> — siguen superando al deep learning para tareas de regresión con datos tabulares (los datos típicos de negocio).</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>NGBoost (Natural Gradient Boosting)</h4>
+                    <p style="margin-top: 10px;">Avance notable que produce <strong>distribuciones de probabilidad completas</strong> en lugar de predicciones puntuales.</p>
+                    <p style="margin-top: 8px;">En vez de decir "el precio será $350,000", dice <strong>"el precio será $350,000 ± $25,000 con 90% de confianza"</strong>.</p>
+                    <p style="margin-top: 8px;">Esto es crítico para gestión de riesgos en finanzas y salud.</p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>AutoML democratiza la regresión</h4>
+                        <p style="margin-top: 8px;">El mercado de AutoML creció de $1.64B en 2024 a $2.35B en 2025, proyectándose a $10.93B para 2029 (CAGR 46.8%).</p>
+                        <p style="margin-top: 8px;"><strong>AutoML impulsado por LLMs:</strong> Sistemas que permiten describir tareas de regresión en lenguaje natural y ejecutan todo el pipeline automáticamente.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>LLMs con datos tabulares</h4>
+                        <p style="margin-top: 8px;"><strong>DeLTa (NeurIPS 2025):</strong> Integra LLMs con árboles de decisión para predicción tabular sin fine-tuning.</p>
+                        <p style="margin-top: 8px;"><strong>TabLLM:</strong> Convierte datos tabulares en texto natural y usa LLMs para regresión few-shot.</p>
+                        <p style="margin-top: 8px;"><strong>Consenso:</strong> Métodos tradicionales siguen siendo superiores, pero LLMs muestran ventaja en escenarios de pocos datos.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>La EU AI Act (primeras prohibiciones en vigor desde febrero 2025) está acelerando la adopción de técnicas de IA Explicable (XAI). <strong>SHAP</strong> se ha consolidado como el estándar dominante para explicar modelos de regresión.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Herramientas interactivas - Parte 1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas para regresión</h2>
+                <p class="slide-subtitle">Verificadas como funcionales en febrero 2026</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>1. Seeing Theory (Brown University)</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> seeing-theory.brown.edu/regression-analysis/index.html</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Disponible en español</li>
+                        <li>Arrastra puntos de datos y ve la línea de regresión OLS actualizarse en tiempo real</li>
+                        <li>Incluye demostración del Cuarteto de Anscombe (4 datasets con estadísticas idénticas pero visualizaciones diferentes)</li>
+                        <li>Facilidad: ★★★★★</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Mejor uso:</strong> Primera demostración — muestra poderosamente por qué la visualización es crítica</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>2. PhET Least-Squares Regression (Universidad de Colorado)</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> phet.colorado.edu/en/simulations/least-squares-regression</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Simulación HTML5 respaldada por investigación educativa</li>
+                        <li>Los estudiantes crean scatter plots y dibujan su propia línea de mejor ajuste</li>
+                        <li>Luego comparan con la línea real de mínimos cuadrados</li>
+                        <li>Muestra coeficiente de correlación y residuos</li>
+                        <li>Facilidad: ★★★★★</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Mejor uso:</strong> Construir intuición sobre qué significa "mínimos cuadrados"</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>3. Desmos</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> desmos.com/calculator</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Calculadora gráfica en línea — disponible en español</li>
+                        <li>Ingresar datos en tabla y escribir y₁~mx₁+b para lineal o y₁~ax₁²+bx₁+c para cuadrática</li>
+                        <li>Ve el ajuste visual con R²</li>
+                        <li>Facilidad: ★★★★★</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Mejor uso:</strong> Comparar regresión lineal vs. polinomial con los mismos datos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Herramientas interactivas - Parte 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas (continuación)</h2>
+                <p class="slide-subtitle">Más opciones para experimentación práctica</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>4. GeoGebra - Regression Game</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> geogebra.org/m/xC6zq7Zv</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Enfoque gamificado: ajusta manualmente una línea roja minimizando SSE</li>
+                        <li>Compara con la línea de regresión real</li>
+                        <li>Construye intuición sobre "mínimos cuadrados" de forma lúdica</li>
+                        <li>Facilidad: ★★★★★</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Mejor uso:</strong> Engagement activo — los estudiantes "compiten" por encontrar la mejor línea</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>5. Visualize-It: Polynomial Regression</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> visualize-it.github.io/polynomial_regression/simulation.html</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Haz clic para agregar puntos</li>
+                        <li>Usa slider para ajustar grado del polinomio (1-10)</li>
+                        <li>Ideal para demostrar overfitting: al aumentar grado, la curva se ajusta perfectamente pero pierde capacidad predictiva</li>
+                        <li>Muestra función de costo J(θ) en tiempo real</li>
+                        <li>Facilidad: ★★★★★</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Mejor uso:</strong> Demostración visual del tradeoff bias-variance y riesgos de overfitting</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>6. TensorFlow Playground (modo regresión)</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> playground.tensorflow.org</p>
+                    <p><strong>Características:</strong></p>
+                    <ul style="font-size: 14px; margin-top: 8px;">
+                        <li>Cambiar a modo "REGRESSION"</li>
+                        <li>Visualiza cómo una red neuronal aprende a predecir valores continuos</li>
+                        <li>Ajusta pesos en tiempo real</li>
+                        <li>Más avanzado — mejor para demostración guiada</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Herramientas complementarias -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas complementarias y plataformas</h2>
+                <p class="slide-subtitle">Para demostraciones más avanzadas</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>Deeper Playground</h4>
+                        <p style="margin-top: 8px;"><strong>URL:</strong> deeperplayground.org</p>
+                        <p style="margin-top: 8px;">Extiende TensorFlow Playground permitiendo simular regresión lineal, Ridge y Lasso eliminando capas ocultas y ajustando regularización.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>MLPlaygrounds.com</h4>
+                        <p style="margin-top: 8px;"><strong>URL:</strong> mlplaygrounds.com</p>
+                        <p style="margin-top: 8px;">Módulos interactivos de regresión lineal, regresión bayesiana y procesos gaussianos con visualizaciones limpias.</p>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 20px;">
+                    <div class="comparison-card">
+                        <h4>MLaddict</h4>
+                        <p style="margin-top: 8px;"><strong>URL:</strong> mladdict.com/linear-regression-simulator</p>
+                        <p style="margin-top: 8px;">Visualiza el algoritmo de gradiente descendente paso a paso, mostrando cómo la línea de regresión "aprende" iterativamente.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Observable Notebooks</h4>
+                        <p style="margin-top: 8px;"><strong>URL:</strong> observablehq.com/@yizhe-ang/interactive-visualization-of-linear-regression</p>
+                        <p style="margin-top: 8px;">Haz clic para agregar/eliminar puntos y ve la regresión actualizarse. Excelente para mostrar el efecto de outliers.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Google Colab para demostraciones guiadas</h3>
+                    <p><strong>URL:</strong> colab.research.google.com</p>
+                    <p style="margin-top: 10px;">Permite ejecutar notebooks de Python en el navegador. Un instructor puede preparar un notebook donde los estudiantes solo cambien valores y observen resultados, sin necesidad de saber programar.</p>
+                    <p style="margin-top: 10px;"><strong>Ventaja:</strong> Usar datasets reales, bibliotecas profesionales (scikit-learn, pandas) y generar visualizaciones avanzadas — todo sin instalación.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Todas estas herramientas son gratuitas, no requieren registro para uso básico, y están verificadas como funcionales en febrero 2026.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Tabla de priorización -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Priorización de herramientas para demostración</h2>
+                <p class="slide-subtitle">Tabla de referencia rápida</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Prioridad</th>
+                                <th>Herramienta</th>
+                                <th>URL</th>
+                                <th>Mejor uso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>Seeing Theory</td>
+                                <td>seeing-theory.brown.edu/regression-analysis</td>
+                                <td>Primera demostración — Cuarteto de Anscombe, en español</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>Desmos</td>
+                                <td>desmos.com/calculator</td>
+                                <td>Comparar regresión lineal vs. polinomial interactivamente</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>Visualize-It Polynomial</td>
+                                <td>visualize-it.github.io/polynomial_regression</td>
+                                <td>Demostrar overfitting con grado del polinomio</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>PhET Least-Squares</td>
+                                <td>phet.colorado.edu/en/simulations/least-squares-regression</td>
+                                <td>Construir intuición sobre mínimos cuadrados</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>GeoGebra Regression Game</td>
+                                <td>geogebra.org/m/xC6zq7Zv</td>
+                                <td>Engagement activo — "competir" por mejor ajuste</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6</strong></td>
+                                <td>Google Colab</td>
+                                <td>colab.research.google.com</td>
+                                <td>Demostraciones con datos reales y bibliotecas profesionales</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Flujo sugerido para demostración en clase</h3>
+                    <ul>
+                        <li><strong>Paso 1 (5 min):</strong> Usar Seeing Theory para mostrar regresión lineal básica y el Cuarteto de Anscombe</li>
+                        <li><strong>Paso 2 (5 min):</strong> Usar Desmos para comparar regresión lineal y polinomial con mismo dataset</li>
+                        <li><strong>Paso 3 (5 min):</strong> Usar Visualize-It para demostrar overfitting aumentando el grado del polinomio</li>
+                        <li><strong>Paso 4 (10 min):</strong> Mostrar Google Colab con dataset real de propiedades costarricenses (opcional si hay tiempo)</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p>Total de tiempo de demostración: 15-25 minutos dependiendo del nivel de profundidad. Todas las herramientas funcionan sin registro y son completamente gratuitas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Conclusiones -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Conclusiones: la regresión como lenguaje universal de predicción</h2>
+                <p class="slide-subtitle">Conceptos clave para llevar</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>La regresión no es una técnica del pasado ni un concepto puramente académico. En 2026, sigue siendo el <strong>pilar fundamental sobre el cual se construyen sistemas de predicción que mueven billones de dólares</strong> en la economía global.</p>
+                </div>
+
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Insight clave 1</h4>
+                        <p style="margin-top: 8px;"><strong>Interpretabilidad es ahora requisito, no lujo.</strong> El EU AI Act y regulaciones similares están forzando a las organizaciones a usar modelos explicables.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Insight clave 2</h4>
+                        <p style="margin-top: 8px;"><strong>Gradient boosting domina la práctica real</strong> en datos tabulares, pero la regresión lineal sigue siendo indispensable como línea base.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Insight clave 3</h4>
+                        <p style="margin-top: 8px;"><strong>Costa Rica está posicionada como líder regional</strong> con estrategia nacional de IA y oportunidades concretas en múltiples sectores.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Lo que dominan ahora</h3>
+                    <ul>
+                        <li><strong>Diferencia clara entre regresión y clasificación:</strong> números continuos vs. categorías discretas</li>
+                        <li><strong>Regresión lineal y polinomial:</strong> cuándo usar cada una y cómo interpretarlas</li>
+                        <li><strong>Métricas de evaluación:</strong> R², MSE, RMSE, MAE — qué mide cada una y cuándo usarla</li>
+                        <li><strong>Aplicaciones reales impactantes:</strong> desde Zillow valuando 116M propiedades hasta Walmart con 98.24% de precisión</li>
+                        <li><strong>Herramientas interactivas:</strong> plataformas web para experimentar sin código</li>
+                        <li><strong>Tendencias actuales:</strong> AutoML, LLMs con datos tabulares, y la creciente importancia de XAI</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 20px;">
+                    <p style="text-align: center; font-size: 1.3em;">Ahora aplicarán todo lo aprendido en un <strong>caso práctico real</strong> donde desarrollarán una solución de regresión para un problema de negocio costarricense.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
