@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación de Modelos Supervisados - Semana 6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #f5f5f7;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 80px 140px 80px;
+            background: #f5f5f7;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .slide-header {
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 20px;
+            color: #6e6e73;
+            font-weight: 300;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2d1b4e, #00d4ff);
+            border-radius: 10px;
+        }
+
+        .content-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-box h3 {
+            font-size: 24px;
+            color: #2d1b4e;
+            margin-bottom: 12px;
+        }
+
+        .content-box p {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            font-size: 16px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .content-box li::before {
+            content: "\25B8";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-size: 20px;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f0f0f2, #ffffff);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight-box p {
+            font-size: 17px;
+            color: #2d1b4e;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .key-point {
+            background: #ffffff;
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e5e7;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .key-point h4 {
+            color: #2d1b4e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .key-point p {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 18px;
+            border: 1px solid #e5e5e7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(45, 27, 78, 0.15);
+            border-color: #00d4ff;
+        }
+
+        .comparison-card h4 {
+            font-size: 19px;
+            color: #2d1b4e;
+            margin-bottom: 8px;
+        }
+
+        .comparison-card p {
+            font-size: 14px;
+            color: #1d1d1f;
+            line-height: 1.4;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .four-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        strong {
+            color: #2d1b4e;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 50%, #ffffff 100%);
+            padding: 60px 80px 140px 80px;
+        }
+
+        .cover-title {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #2d1b4e, #00d4ff, #2d1b4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cover-subtitle {
+            font-size: 32px;
+            color: #6e6e73;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .cover-info {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #6e6e73;
+            font-size: 16px;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d1b4e, #00d4ff);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        tr:hover {
+            background: #f8f8ff;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 15px;
+        }
+
+        .matrix-table {
+            width: auto;
+            margin: 0 auto;
+        }
+
+        .matrix-table th, .matrix-table td {
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 15px;
+        }
+
+        .matrix-table .tp { background: rgba(0, 212, 255, 0.15); color: #2d1b4e; font-weight: 600; }
+        .matrix-table .fn { background: rgba(255, 193, 7, 0.15); color: #856404; font-weight: 600; }
+        .matrix-table .fp { background: rgba(255, 193, 7, 0.15); color: #856404; font-weight: 600; }
+        .matrix-table .tn { background: rgba(0, 212, 255, 0.08); color: #2d1b4e; font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 24px 140px 24px;
+            }
+
+            .slide-title {
+                font-size: 32px;
+            }
+
+            .slide-subtitle {
+                font-size: 16px;
+            }
+
+            .cover-title {
+                font-size: 42px;
+            }
+
+            .cover-subtitle {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stats-grid,
+            .two-columns,
+            .three-columns,
+            .four-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card .number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-number">
+        <span id="currentSlide">1</span> / <span id="totalSlides">20</span>
+    </div>
+
+    <div class="presentation-container">
+
+        <!-- Slide 1: Portada -->
+        <div class="slide cover-slide active">
+            <h1 class="cover-title">Evaluacion de modelos supervisados</h1>
+            <p class="cover-subtitle">Semana 6: Medir bien para decidir mejor</p>
+            <div class="cover-info">
+                <p>Microcredencial en Inteligencia Artificial y Analisis de Datos<br>
+                Universidad Latinoamericana de Ciencia y Tecnologia<br>
+                Febrero 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Agenda de la sesion</h2>
+                <p class="slide-subtitle">De las metricas tecnicas a las decisiones de negocio</p>
+            </div>
+            <div class="slide-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">90%</div>
+                        <div class="label">tasa de error del algoritmo de UnitedHealthcare al optimizar la metrica incorrecta</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$528M</div>
+                        <div class="label">perdida de Zillow por un modelo sobreajustado (overfitting)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">85%</div>
+                        <div class="label">de proyectos de IA que no entregaron resultados esperados en 2024</div>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 30px;">
+                    <h3>Lo que aprenderemos hoy</h3>
+                    <ul>
+                        <li>Metricas para clasificacion: precision, recall, F1-score, matriz de confusion, AUC-ROC</li>
+                        <li>Metricas para regresion: MSE, RMSE, MAE, R-cuadrado</li>
+                        <li>Division de datos: train, test y validation &mdash; y por que importa el orden</li>
+                        <li>Validacion cruzada: k-fold, stratified, temporal y anidada</li>
+                        <li>Overfitting vs underfitting: como detectarlos y prevenirlos</li>
+                        <li>Herramientas web interactivas para visualizar metricas</li>
+                        <li>Casos reales donde medir mal tuvo consecuencias millonarias</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <p>Un modelo de IA solo es tan bueno como la forma en que lo medimos. Hoy aprenderan a evaluar modelos como lo hacen los equipos de ciencia de datos en la industria real. Al final, aplicaremos todo en un caso practico.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Por que importa medir bien -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Por que importa elegir la metrica correcta</h2>
+                <p class="slide-subtitle">Medir lo incorrecto destruye valor y confianza</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>UnitedHealthcare (2024): optimizar la metrica equivocada</h4>
+                    <p style="margin-top: 10px;">Su algoritmo "nH Predict" fue disenado para <strong>optimizar costos financieros</strong> en lugar de precision medica. Resultado: tasa de error del <strong>90%</strong> en las denegaciones de cobertura de salud, demandas colectivas en mas de 21 estados de EE.UU., y un escandalo con graves consecuencias.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Earnest Operations (2025): sesgo oculto en scoring crediticio</h4>
+                    <p style="margin-top: 10px;">Uso un algoritmo que discriminaba indirectamente por raza, utilizando la <strong>tasa de morosidad de la universidad</strong> como variable proxy. Resultado: conciliacion de <strong>$2.5 millones</strong>. El modelo tenia buen accuracy global, pero las metricas de equidad por subgrupos revelaban el problema.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Eightfold AI (2025): primera demanda colectiva contra IA de contratacion</h4>
+                    <p style="margin-top: 10px;">Plataforma utilizada por Microsoft, Morgan Stanley, Starbucks y PayPal genera <strong>"informes secretos"</strong> calificando candidatos sin su conocimiento. Amazon previamente descarto su herramienta de reclutamiento por IA al descubrir que penalizaba a mujeres.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>La evaluacion de modelos no es un paso tecnico opcional &mdash; es la diferencia entre un sistema de IA que genera valor y uno que destruye reputacion, dinero y confianza.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Matriz de confusion -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">La matriz de confusion: punto de partida obligatorio</h2>
+                <p class="slide-subtitle">Toda evaluacion de clasificacion binaria comienza aqui</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-box">
+                    <h3>Estructura basica</h3>
+                    <div class="table-container">
+                        <table class="matrix-table" style="max-width: 700px; margin: 15px auto;">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Prediccion: Positivo</th>
+                                    <th>Prediccion: Negativo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Real: Positivo</strong></td>
+                                    <td class="tp">Verdadero Positivo (VP)<br><small>Acierto: detectado correctamente</small></td>
+                                    <td class="fn">Falso Negativo (FN)<br><small>Error: se "dejo pasar"</small></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Real: Negativo</strong></td>
+                                    <td class="fp">Falso Positivo (FP)<br><small>Error: falsa alarma</small></td>
+                                    <td class="tn">Verdadero Negativo (VN)<br><small>Acierto: descartado correctamente</small></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="key-point">
+                        <h4>Falsos negativos (FN) &mdash; "Se escaparon"</h4>
+                        <p>Casos positivos que el modelo no detecto. Criticos cuando no detectar es peligroso o costoso:</p>
+                        <p style="margin-top: 5px;"><strong>Fraude no detectado, enfermedad no diagnosticada, amenaza de seguridad ignorada.</strong></p>
+                    </div>
+
+                    <div class="key-point">
+                        <h4>Falsos positivos (FP) &mdash; "Falsas alarmas"</h4>
+                        <p>Casos negativos que el modelo etiqueto como positivos. Criticos cuando alarmar innecesariamente es costoso:</p>
+                        <p style="margin-top: 5px;"><strong>Correo legitimo en spam, cliente bueno rechazado, alerta medica innecesaria.</strong></p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>La matriz de confusion es la base de todas las metricas que veremos a continuacion. Entenderla es entender que tipo de errores comete el modelo &mdash; y cada tipo de error tiene un costo diferente para el negocio.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Precision, Recall, F1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Precision, recall y F1-score</h2>
+                <p class="slide-subtitle">Las tres metricas esenciales de clasificacion</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Precision</h4>
+                        <p style="margin-top: 10px; font-size: 16px; text-align: center;"><strong>VP / (VP + FP)</strong></p>
+                        <p style="margin-top: 10px;">"De todo lo que el modelo etiqueto como positivo, &iquest;cuanto realmente lo era?"</p>
+                        <p style="margin-top: 10px;"><strong>Priorizar cuando los FP son costosos:</strong> filtrado de spam, recomendaciones de productos, alertas automaticas.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>Recall (sensibilidad)</h4>
+                        <p style="margin-top: 10px; font-size: 16px; text-align: center;"><strong>VP / (VP + FN)</strong></p>
+                        <p style="margin-top: 10px;">"De todos los casos realmente positivos, &iquest;cuantos detecto el modelo?"</p>
+                        <p style="margin-top: 10px;"><strong>Priorizar cuando los FN son inaceptables:</strong> deteccion de fraude ($4.3M por incidente), diagnostico de cancer, seguridad.</p>
+                    </div>
+
+                    <div class="comparison-card">
+                        <h4>F1-score</h4>
+                        <p style="margin-top: 10px; font-size: 16px; text-align: center;"><strong>2 x (Prec x Rec) / (Prec + Rec)</strong></p>
+                        <p style="margin-top: 10px;">"Media armonica entre precision y recall."</p>
+                        <p style="margin-top: 10px;"><strong>Usar cuando se necesita equilibrio.</strong> Variantes: F2-score (mas peso a recall), F0.5-score (mas peso a precision).</p>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>El trade-off fundamental</h4>
+                    <p>Mejorar la precision usualmente reduce el recall y viceversa. No se puede maximizar ambas simultaneamente &mdash; la decision de cual priorizar es una <strong>decision de negocio</strong>, no tecnica. Depende de que tipo de error es mas costoso en el contexto especifico.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>Neptune.ai recomienda F1-score como metrica principal para clasificacion binaria con datos desbalanceados porque "se puede explicar facilmente a los stakeholders de negocio."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: AUC-ROC y guia de seleccion -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">AUC-ROC y guia de seleccion de metricas</h2>
+                <p class="slide-subtitle">Evaluacion global y como elegir la metrica correcta</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>AUC-ROC (Area bajo la curva ROC)</h4>
+                    <p>Mide la capacidad discriminativa global del modelo graficando la <strong>Tasa de Verdaderos Positivos vs. la Tasa de Falsos Positivos</strong> en todos los umbrales posibles. <strong>AUC = 1</strong> indica modelo perfecto; <strong>AUC = 0.5</strong> indica que no es mejor que el azar. Util para comparar modelos, pero puede ser enganosa con datos muy desbalanceados &mdash; en esos casos se prefiere la PR-AUC (curva Precision-Recall).</p>
+                </div>
+
+                <div class="table-container" style="margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Problema de negocio</th>
+                                <th>Metrica prioritaria</th>
+                                <th>Razonamiento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Deteccion de fraude</strong></td>
+                                <td>Recall, F2-score, PR-AUC</td>
+                                <td>No detectar fraude (FN) es extremadamente costoso</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Filtrado de spam</strong></td>
+                                <td>Precision</td>
+                                <td>Bloquear correo legitimo (FP) frustra al usuario</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Diagnostico medico</strong></td>
+                                <td>Recall, luego F1</td>
+                                <td>No detectar enfermedad (FN) puede ser fatal</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Scoring crediticio</strong></td>
+                                <td>F1, AUC-ROC + equidad</td>
+                                <td>Balance necesario; requisitos regulatorios</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prediccion de churn</strong></td>
+                                <td>F1 o MCC</td>
+                                <td>Evaluacion balanceada en datos desbalanceados</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="key-point" style="margin-top: 15px;">
+                    <h4>MCC: la metrica emergente de 2025</h4>
+                    <p><strong>Matthews Correlation Coefficient</strong> esta ganando consenso como metrica superior al F1-score para datos desbalanceados. Usa los cuatro componentes de la matriz de confusion y produce valores entre -1 (completamente errado) y +1 (perfecto). Un estudio de 2025 en el Journal of Big Data concluyo que "F1-score y MCC son las metricas mas estables y balanceadas para clasificacion empresarial."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Casos reales de metricas 2024-2025 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Casos reales donde las metricas fueron criticas</h2>
+                <p class="slide-subtitle">Datos concretos de 2024-2025</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Deteccion de fraude bancario (2024)</h4>
+                    <p style="margin-top: 10px;">Estudio con <strong>565,000 transacciones reales</strong> (Cogent Business & Management, 2025). Random Forest logro 95.79% de deteccion, pero el desafio clave fue el <strong>desbalance masivo de clases</strong>. Se combinaron precision, recall, F1 y AUC-ROC con tecnicas de rebalanceo (SMOTE). El fraude bancario global costo mas de <strong>$45 mil millones en 2024</strong> (Nasdaq).</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Diagnostico medico con IA (2025)</h4>
+                    <p style="margin-top: 10px;">Meta-analisis de npj Digital Medicine (Nature, 2025) sobre 83 estudios: los modelos de IA generativa lograron una <strong>precision diagnostica general de solo 52.1%</strong>, sin diferencia significativa con medicos. Para agosto 2024, la FDA habia autorizado aproximadamente <strong>950 dispositivos medicos basados en IA/ML</strong>.</p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="stat-card">
+                        <div class="number">$45B</div>
+                        <div class="label">costo global del fraude bancario en 2024 (Nasdaq)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">950</div>
+                        <div class="label">dispositivos medicos con IA/ML autorizados por la FDA para 2024</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">5-10%</div>
+                        <div class="label">menos precision para minorias en modelos de credito (Stanford HAI)</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>Las metricas de equidad (fairness) ya no son opcionales. El EU AI Act y la legislacion costarricense emergente (Proyecto de Ley 23097) exigen transparencia y auditabilidad algoritmica.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Metricas de regresion -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Metricas para regresion</h2>
+                <p class="slide-subtitle">Medir el error en sus propias unidades</p>
+            </div>
+            <div class="slide-content">
+                <div class="four-columns">
+                    <div class="comparison-card">
+                        <h4>MSE</h4>
+                        <p style="margin-top: 8px; font-size: 13px;">Error Cuadratico Medio</p>
+                        <p style="margin-top: 8px; font-size: 13px;"><strong>Amplifica errores grandes.</strong> Util para optimizacion por ser diferenciable. Dificil de interpretar (unidades al cuadrado).</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>RMSE</h4>
+                        <p style="margin-top: 8px; font-size: 13px;">Raiz del MSE</p>
+                        <p style="margin-top: 8px; font-size: 13px;"><strong>La mas utilizada</strong> para reporte. Mismas unidades que el target. H2O AutoML ordena modelos por RMSE como estandar.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>MAE</h4>
+                        <p style="margin-top: 8px; font-size: 13px;">Error Absoluto Medio</p>
+                        <p style="margin-top: 8px; font-size: 13px;"><strong>La mas interpretable:</strong> "en promedio, nos equivocamos por X unidades." Mas robusta ante outliers.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>R-cuadrado</h4>
+                        <p style="margin-top: 8px; font-size: 13px;">Coeficiente de Determinacion</p>
+                        <p style="margin-top: 8px; font-size: 13px;">Proporcion de varianza explicada. <strong>0 a 1</strong> (mas cercano a 1 = mejor). Puede ser negativo si el modelo es peor que la media.</p>
+                    </div>
+                </div>
+
+                <div class="key-point" style="margin-top: 20px;">
+                    <h4>Cuando usar cada una</h4>
+                    <p><strong>MSE/RMSE:</strong> Cuando errores grandes son especialmente costosos (ej: predecir demanda &mdash; quedarse sin stock es peor que tener un poco de mas). <strong>MAE:</strong> Cuando equivocarse por 20 es exactamente el doble de malo que equivocarse por 10, o cuando hay outliers. <strong>R-cuadrado:</strong> Para comunicar a stakeholders y evaluar la dificultad inherente del problema.</p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Caso real: valuacion inmobiliaria (2025)</h4>
+                        <p style="margin-top: 8px;">Random Forest logro los mejores resultados: <strong>R-cuadrado = 89.55%</strong>, MAE = $8,883, MAPE = 10.32%. Alineado con el rendimiento del Zestimate de Zillow.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Caso real: pronostico de demanda</h4>
+                        <p style="margin-top: 8px;">McKinsey (2024): sistemas ML reducen errores de pronostico en <strong>20-50%</strong> vs. metodos tradicionales. Empresas con pronostico basado en IA reportan <strong>65% menos ventas perdidas</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>La practica actual recomienda usar multiples metricas simultaneamente para obtener una vision completa. Una sola metrica nunca cuenta toda la historia.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Division de datos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Division de datos: train, test y validation</h2>
+                <p class="slide-subtitle">La primera linea contra el autoengano</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>La forma en que se dividen los datos determina si la evaluacion refleja la realidad o una ilusion. El conjunto de test se usa <strong>una sola vez</strong> al final. Nunca para ajustar hiperparametros &mdash; para eso existe el conjunto de validacion.</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Tres conjuntos, tres propositos</h3>
+                    <div class="three-columns" style="margin-top: 10px;">
+                        <div style="text-align: center; padding: 15px; background: rgba(0, 212, 255, 0.08); border-radius: 12px;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2d1b4e;">Train (70-80%)</p>
+                            <p style="margin-top: 8px; font-size: 14px;">El modelo <strong>aprende</strong> de estos datos. Ajusta pesos y parametros internos.</p>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(45, 27, 78, 0.06); border-radius: 12px;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2d1b4e;">Validation (10-15%)</p>
+                            <p style="margin-top: 8px; font-size: 14px;">Se usa para <strong>ajustar hiperparametros</strong> y seleccionar el mejor modelo.</p>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: rgba(0, 212, 255, 0.08); border-radius: 12px;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2d1b4e;">Test (10-15%)</p>
+                            <p style="margin-top: 8px; font-size: 14px;">Evaluacion <strong>final e imparcial</strong>. Se usa una sola vez. Simula datos nuevos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tamano del dataset</th>
+                                <th>Division recomendada</th>
+                                <th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Muy grande (millones)</strong></td>
+                                <td>98/1/1 o 90/5/5</td>
+                                <td>Incluso 1% es estadisticamente representativo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Grande (>100K)</strong></td>
+                                <td>80/10/10</td>
+                                <td>Estandar para la mayoria de aplicaciones</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mediano (10K-100K)</strong></td>
+                                <td>70/15/15 u 80/10/10</td>
+                                <td>Enfoque balanceado</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pequeno (<10K)</strong></td>
+                                <td>70/15/15 o 60/20/20</td>
+                                <td>Conjunto de validacion debe ser significativo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Muy pequeno (<1K)</strong></td>
+                                <td>Usar validacion cruzada k-fold</td>
+                                <td>Cada observacion es demasiado valiosa para separar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Validacion cruzada -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Validacion cruzada</h2>
+                <p class="slide-subtitle">Tecnicas para evaluar modelos de forma robusta</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="comparison-card">
+                        <h4>K-Fold (la mas comun)</h4>
+                        <p style="margin-top: 10px;">Divide los datos en <strong>k grupos</strong> (tipicamente k=5 o k=10). Entrena en k-1 folds, evalua en el fold restante, y rota k veces. Reporta media y desviacion estandar. Scikit-learn y las principales plataformas AutoML usan k=5 como estandar.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Stratified K-Fold</h4>
+                        <p style="margin-top: 10px;">Igual que K-Fold, pero <strong>asegura que cada fold preserve la distribucion de clases</strong>. Esencial para datos desbalanceados como deteccion de fraude o diagnostico medico, donde la clase minoritaria podria quedar subrepresentada en algun fold.</p>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Validacion temporal (Walk-Forward)</h4>
+                        <p style="margin-top: 10px;"><strong>Nunca</strong> usar k-fold estandar con datos temporales &mdash; crea fuga temporal (usar datos futuros para predecir el pasado). La ventana de entrenamiento crece progresivamente y la evaluacion siempre es sobre datos futuros.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Validacion cruzada anidada (Nested CV)</h4>
+                        <p style="margin-top: 10px;">Dos bucles: el <strong>externo</strong> estima la generalizacion, el <strong>interno</strong> selecciona hiperparametros. Previene fuga de datos durante el ajuste. Metodo mas riguroso disponible.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top: 15px;">
+                    <p><strong>Regla de oro:</strong> La validacion cruzada no reemplaza al conjunto de test &mdash; lo complementa. CV se usa para seleccionar y afinar el modelo; el test set se reserva para la evaluacion final unica.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Fuga de datos -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Fuga de datos (data leakage)</h2>
+                <p class="slide-subtitle">El error #1 que infla resultados y causa fracasos en produccion</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Que es y por que es tan peligrosa</h4>
+                    <p>La fuga de datos ocurre cuando <strong>informacion del futuro o del conjunto de test se filtra al proceso de entrenamiento</strong>. Un estudio de Princeton identifico 41 articulos en 30 campos donde la fuga causo conclusiones falsamente optimistas, afectando a 648 publicaciones. IBM la describe como "un error que consume tiempo y cuesta millones de dolares."</p>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Los 6 errores mas comunes</h3>
+                    <ul>
+                        <li><strong>Preprocesamiento antes de dividir:</strong> Aplicar escalado o imputacion a TODO el dataset antes de separar train/test. El .fit() del StandardScaler solo debe usar datos de entrenamiento.</li>
+                        <li><strong>Seleccion de features con todo el dataset:</strong> Elegir variables mas correlacionadas usando toda la data y luego hacer CV. Infla drasticamente el rendimiento aparente.</li>
+                        <li><strong>Fuga temporal:</strong> Usar k-fold aleatorio en datos con componente temporal.</li>
+                        <li><strong>Sujetos repetidos:</strong> La misma persona o entidad aparece en train y test.</li>
+                        <li><strong>SMOTE antes de dividir:</strong> Generar muestras sinteticas antes del split crea cuasi-duplicados entre train y test.</li>
+                        <li><strong>Contaminacion feature-target:</strong> Incluir variables que son consecuencia del objetivo (ej: "tratamiento recibido" al predecir la enfermedad).</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>Regla simple: todo preprocesamiento debe hacerse DESPUES de dividir los datos y usando SOLO los datos de entrenamiento para calcular parametros (media, desviacion, etc.).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Overfitting vs Underfitting -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Overfitting vs underfitting</h2>
+                <p class="slide-subtitle">Cuando el modelo se engana a si mismo</p>
+            </div>
+            <div class="slide-content">
+                <div class="two-columns">
+                    <div class="content-box">
+                        <h3>Overfitting (sobreajuste)</h3>
+                        <p>El modelo <strong>memoriza</strong> los datos de entrenamiento en vez de aprender patrones generalizables.</p>
+                        <p style="margin-top: 10px;"><strong>Como detectarlo:</strong></p>
+                        <ul>
+                            <li>Alto rendimiento en entrenamiento, bajo en test</li>
+                            <li>Ejemplo: 99% train, 55% test = overfitting claro</li>
+                            <li>Curvas de aprendizaje que divergen</li>
+                            <li>Alta varianza entre folds de CV</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Analogia:</strong> Es como un estudiante que memoriza las respuestas del examen pasado pero no entiende los conceptos &mdash; fracasa ante preguntas nuevas.</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Underfitting (subajuste)</h3>
+                        <p>El modelo es <strong>demasiado simple</strong> para capturar los patrones existentes.</p>
+                        <p style="margin-top: 10px;"><strong>Como detectarlo:</strong></p>
+                        <ul>
+                            <li>Bajo rendimiento en AMBOS conjuntos (train y test)</li>
+                            <li>Ejemplo: 60% train, 58% test = underfitting</li>
+                            <li>Curvas de aprendizaje que convergen en error alto</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><strong>Causas comunes:</strong> Modelo demasiado simple, features insuficientes, regularizacion excesiva, entrenamiento insuficiente.</p>
+                        <p style="margin-top: 10px;"><strong>Analogia:</strong> Es como intentar explicar las ventas de una tienda usando solo el dia de la semana, ignorando temporadas, promociones y clima.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>El objetivo ideal es el punto medio: un modelo suficientemente complejo para capturar patrones reales, pero no tanto como para memorizar ruido. Esto se conoce como el balance bias-variance.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Prevencion de overfitting -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Tecnicas de prevencion del overfitting</h2>
+                <p class="slide-subtitle">El arsenal moderno contra la memorizacion</p>
+            </div>
+            <div class="slide-content">
+                <div class="three-columns">
+                    <div class="comparison-card">
+                        <h4>Regularizacion</h4>
+                        <p style="margin-top: 8px;"><strong>L1 (Lasso):</strong> Lleva algunos pesos a cero, seleccionando features automaticamente.</p>
+                        <p style="margin-top: 5px;"><strong>L2 (Ridge):</strong> Distribuye la importancia de forma mas uniforme, penalizando pesos grandes.</p>
+                        <p style="margin-top: 5px;"><strong>Elastic Net:</strong> Combina ambas.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Dropout</h4>
+                        <p style="margin-top: 8px;">Desactiva neuronas aleatoriamente (20-50%) durante el entrenamiento, forzando redundancia.</p>
+                        <p style="margin-top: 5px;">Variantes: Spatial Dropout (para CNNs), DropConnect, DropBlock.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Early stopping</h4>
+                        <p style="margin-top: 8px;">Detener el entrenamiento cuando el error de validacion comienza a subir.</p>
+                        <p style="margin-top: 5px;">Se configura un parametro de "paciencia" (tipicamente 5-20 epocas sin mejora).</p>
+                    </div>
+                </div>
+
+                <div class="three-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Data augmentation</h4>
+                        <p style="margin-top: 8px;">Generar mas datos de entrenamiento: rotacion, recorte, volteo (clasicas). En 2025: AutoAugment, CutMix/MixUp, y <strong>datos sinteticos con modelos de difusion</strong>.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Metodos de ensemble</h4>
+                        <p style="margin-top: 8px;">Random Forest combate overfitting promediando multiples arboles. XGBoost y LightGBM implementan regularizacion interna.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Transfer learning</h4>
+                        <p style="margin-top: 8px;">Usar modelos pre-entrenados (ResNet, BERT, GPT) con features generalizables. Congelar capas base y ajustar solo las ultimas 1-2.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>La prevencion del overfitting no es una tecnica unica sino una combinacion de estrategias. Los frameworks modernos como H2O Driverless AI y Amazon SageMaker implementan deteccion y prevencion automatica de overfitting.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Desastres reales de overfitting -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Desastres reales de overfitting</h2>
+                <p class="slide-subtitle">Cuando memorizar datos causa perdidas millonarias</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Zillow: perdida de $528 millones</h4>
+                    <p style="margin-top: 10px;">El algoritmo Zestimate para compra directa de propiedades fue entrenado con datos de <strong>mercado estable</strong> y no generalizo a la volatilidad pandemica. Un proyecto interno impedia que los expertos anularan las valuaciones algoritmicas. Resultado: <strong>$528M en perdidas</strong> en un trimestre, mas de $900M en ajustes totales, caida del 50%+ en valor accionario y 2,000 empleados despedidos.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>Modelos COVID-19: fracaso masivo</h4>
+                    <p style="margin-top: 10px;">Nature Machine Intelligence reviso 415 herramientas de deep learning para diagnostico COVID y concluyo que <strong>ninguna era apta para uso clinico</strong>. Problemas de overfitting criticos: modelos aprendieron a identificar ninos (no COVID) porque las imagenes de control eran pediatricas; otros aprendieron la posicion del paciente (acostado = hospitalizado = severo); algunos identificaban el tipo de fuente tipografica del hospital como predictor.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>IBM Watson for Oncology: $62 millones perdidos</h4>
+                    <p style="margin-top: 10px;">Dio recomendaciones erroneas de tratamiento oncologico, incluyendo recetar medicamentos que inducen sangrado a pacientes con hemorragias. Fue entrenado con <strong>datos hipoteticos</strong> en lugar de datos reales de pacientes. Costo $62 millones al MD Anderson Cancer Center sin resultados.</p>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>En 2024, mas del 80% de los proyectos de IA fallaron en llegar a produccion significativa (RAND Corporation). Solo el 35% de empresas rastrean metricas de rendimiento de IA, aunque el 80% dice que la confiabilidad es su principal preocupacion (IBM 2024).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Herramientas interactivas Tier 1 -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas: metricas de clasificacion</h2>
+                <p class="slide-subtitle">Verificadas como funcionales en febrero 2026</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>1. PREDICTOR Dashboard</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> leonshpaner.com/pred/</p>
+                    <p>La mejor herramienta individual para metricas de clasificacion. Muestra en un solo panel: <strong>Curva ROC, Curva Precision-Recall, Histograma de separacion de clases y Matriz de Confusion</strong>. Permite subir CSV o generar datos aleatorios. Ajuste interactivo de umbral. Sin login.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>2. DataVizPyr Confusion Matrix Calculator</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> datavizpyr.com/tools/confusion-matrix-calculator.html</p>
+                    <p>Calculadora interactiva con escenarios precargados de negocios: <strong>Diagnostico Medico, Deteccion de Spam, Fraude, Cancer</strong>. Calcula automaticamente Accuracy, Precision, Recall, F1, MCC, AUC-ROC y mas.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>3. Omni Calculator &mdash; Confusion Matrix</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> omnicalculator.com/statistics/confusion-matrix</p>
+                    <p>Interfaz limpia y minimalista. Ingresar VP, FP, FN, VN y obtiene todas las metricas instantaneamente. Perfecto para principiantes.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>4. TensorFlow Playground</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> playground.tensorflow.org</p>
+                    <p>Herramienta estrella para demostrar <strong>overfitting/underfitting</strong>. Ajustar capas, neuronas, tasa de aprendizaje, regularizacion y tipo de datos. Visualiza fronteras de decision en tiempo real. Sin login.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Herramientas interactivas - regresion y mas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Herramientas web interactivas: regresion y overfitting</h2>
+                <p class="slide-subtitle">Mas opciones para experimentacion practica</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>5. ToolDone MSE Calculator</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> tooldone.com/statistic/mse-calculator/</p>
+                    <p>Calcula MSE, RMSE, MAE y SSE juntos con visualizacion mostrando valores reales vs. predichos.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>6. ML Visualizer</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> ml-visualiser.vercel.app/</p>
+                    <p>Cuatro modulos interactivos: <strong>Regresion Lineal con animacion de gradiente, Fronteras de Decision, Arquitectura de Red Neuronal, y Visualizador CNN</strong>. Disenado especificamente para estudiantes.</p>
+                </div>
+
+                <div class="comparison-card" style="margin-top: 15px;">
+                    <h4>7. Google ML Crash Course &mdash; Modulo de Overfitting</h4>
+                    <p style="margin-top: 10px;"><strong>URL:</strong> developers.google.com/machine-learning/crash-course/overfitting</p>
+                    <p>Ejercicios interactivos donde los estudiantes identifican overfitting, perdida oscilante y perdida explosiva desde curvas visuales. Con soluciones. Disponible parcialmente en espanol.</p>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Plataformas educativas gratuitas</h4>
+                        <p style="margin-top: 8px;"><strong>Google ML Crash Course:</strong> Recurso gratuito mas completo. Cubre todas las metricas con ejercicios y notebooks en Colab.</p>
+                        <p style="margin-top: 5px;"><strong>Kaggle Learn:</strong> Micro-cursos de pocas horas sobre ML intermedio (validacion cruzada, fuga de datos).</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Notebooks de Colab listos</h4>
+                        <p style="margin-top: 8px;"><strong>Classification Metrics Evaluation</strong> (github.com/jvtesteves) &mdash; Matriz de confusion, todas las metricas, formulas paso a paso.</p>
+                        <p style="margin-top: 5px;"><strong>Google MLCC Exercises</strong> &mdash; Notebooks oficiales de Google cubriendo regresion, clasificacion y overfitting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Tabla de priorizacion de herramientas -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Priorizacion de herramientas para demostracion</h2>
+                <p class="slide-subtitle">Tabla de referencia rapida</p>
+            </div>
+            <div class="slide-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Herramienta</th>
+                                <th>Mejor uso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>PREDICTOR Dashboard</td>
+                                <td>Curva ROC, PR, matriz de confusion y umbral en un solo panel</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>DataVizPyr Confusion Matrix</td>
+                                <td>Calcular metricas con escenarios de negocio precargados</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>TensorFlow Playground</td>
+                                <td>Demostrar overfitting/underfitting ajustando complejidad del modelo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>ToolDone MSE Calculator</td>
+                                <td>Calcular y visualizar metricas de regresion (MSE, RMSE, MAE)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>Google ML Crash Course</td>
+                                <td>Ejercicios interactivos de interpretacion de curvas de perdida</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6</strong></td>
+                                <td>Google Colab</td>
+                                <td>Demostraciones con datos reales y bibliotecas profesionales</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-box" style="margin-top: 20px;">
+                    <h3>Flujo sugerido para demostracion en clase</h3>
+                    <ul>
+                        <li><strong>Paso 1 (5 min):</strong> Usar DataVizPyr o Omni Calculator para calcular metricas de clasificacion desde una matriz de confusion</li>
+                        <li><strong>Paso 2 (5 min):</strong> Usar PREDICTOR Dashboard para explorar curvas ROC y el efecto de ajustar el umbral</li>
+                        <li><strong>Paso 3 (5 min):</strong> Usar ToolDone para calcular MSE, RMSE, MAE con datos de ejemplo</li>
+                        <li><strong>Paso 4 (5 min):</strong> Usar TensorFlow Playground para demostrar overfitting aumentando complejidad</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>Total de tiempo de demostracion: 15-20 minutos. Todas las herramientas son gratuitas, no requieren registro y estan verificadas como funcionales en febrero 2026.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Contexto Costa Rica -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Contexto: Costa Rica y Latinoamerica</h2>
+                <p class="slide-subtitle">Por que la evaluacion de modelos es critica aqui y ahora</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Costa Rica: primer pais centroamericano con estrategia nacional de IA</h4>
+                    <p>La ENIA 2024-2027 incluye IA etica con sandboxes regulatorios, clusters de IA para PYMES, gobierno inteligente, formacion de talento y un Centro Nacional de Excelencia en IA. El Proyecto de Ley 23097 busca alinearse con el GDPR europeo, requiriendo <strong>auditabilidad de modelos algoritmicos</strong>.</p>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 15px;">
+                    <div class="stat-card">
+                        <div class="number">75%</div>
+                        <div class="label">de multinacionales de servicios en CR implementan IA (CINDE)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">$30.2B</div>
+                        <div class="label">mercado proyectado de IA en LATAM para 2033</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">70%</div>
+                        <div class="label">de latinoamericanos son sub-bancarizados</div>
+                    </div>
+                </div>
+
+                <div class="two-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Oportunidad en inclusion financiera</h4>
+                        <p style="margin-top: 8px;">El scoring crediticio con ML usando datos alternativos puede mejorar la precision predictiva hasta en <strong>85%</strong> en la region. Random Forest y XGBoost superan la regresion logistica tradicional con 16% de mejora en AUC en microfinanzas.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Regulacion emergente</h4>
+                        <p style="margin-top: 8px;">PRODHAB ha recibido <strong>1,489 quejas</strong> desde 2014, siendo el sector bancario el mas denunciado (302 quejas). La evaluacion rigurosa de modelos sera no solo buena practica sino <strong>obligacion legal</strong> hacia 2026.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p>BAC Credomatic (4.5 millones de clientes), Amazon Costa Rica (10,000+ empleados) y Johnson Controls operan equipos de ML desde Costa Rica. Las competencias de evaluacion de modelos que desarrollamos hoy son directamente aplicables en estas organizaciones.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Metricas emergentes y tendencias -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Tendencias emergentes en evaluacion (2025-2026)</h2>
+                <p class="slide-subtitle">Hacia donde va la practica profesional</p>
+            </div>
+            <div class="slide-content">
+                <div class="comparison-card">
+                    <h4>Prediccion conformal</h4>
+                    <p style="margin-top: 10px;">La tendencia mas significativa de 2025-2026. En vez de predecir "el precio es 50 millones de colones", produce <strong>"el precio esta entre 45-55 millones con 90% de garantia"</strong>. Es el unico enfoque que proporciona garantias estadisticas validas con minimos supuestos. La biblioteca MAPIE (scikit-learn-contrib) es la implementacion de referencia.</p>
+                </div>
+
+                <div class="three-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Metricas de equidad</h4>
+                        <p style="margin-top: 8px;">Herramientas como <strong>IBM AI Fairness 360</strong>, <strong>Microsoft Fairlearn</strong> y <strong>Google What-If Tool</strong> evaluan paridad demografica e igualdad de oportunidades. Ya no son opcionales con el EU AI Act.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Metricas + explainabilidad</h4>
+                        <p style="margin-top: 8px;">La integracion de <strong>SHAP y LIME</strong> con la evaluacion de metricas permite entender por que cambia una metrica, no solo cuanto cambia.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Metricas de negocio</h4>
+                        <p style="margin-top: 8px;">Eric Siegel (MIT Sloan, 2024): <strong>"la mayoria de proyectos de ML reportan las metricas equivocadas"</strong>. Propone traducir metricas tecnicas a terminos monetarios.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Herramientas y frameworks de monitoreo (2025)</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Herramienta</th>
+                                    <th>Tipo</th>
+                                    <th>Capacidad clave</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Weights & Biases</strong></td>
+                                    <td>Plataforma MLOps</td>
+                                    <td>Streaming en tiempo real de metricas, comparacion de experimentos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>MLflow</strong></td>
+                                    <td>Open-source</td>
+                                    <td>Tracking de metricas, registro de modelos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Evidently AI</strong></td>
+                                    <td>Monitoreo ML</td>
+                                    <td>Deteccion de data drift y concept drift en produccion</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>AWS SageMaker Debugger</strong></td>
+                                    <td>Cloud</td>
+                                    <td>Deteccion automatizada de overfitting durante entrenamiento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Conclusiones -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">Conclusiones: evaluar bien es decidir bien</h2>
+                <p class="slide-subtitle">Conceptos clave para llevar</p>
+            </div>
+            <div class="slide-content">
+                <div class="key-point">
+                    <h4>Principio fundamental</h4>
+                    <p>No existe una metrica "correcta" universal. La mejor metrica depende del <strong>contexto de negocio, los costos de los errores y los requisitos regulatorios</strong>. La evaluacion de modelos supervisados es fundamentalmente una decision de negocio informada por datos tecnicos.</p>
+                </div>
+
+                <div class="three-columns" style="margin-top: 15px;">
+                    <div class="comparison-card">
+                        <h4>Insight clave 1</h4>
+                        <p style="margin-top: 8px;"><strong>Accuracy es enganosa con datos desbalanceados.</strong> Precision, recall, F1 y AUC-ROC cuentan historias diferentes y complementarias.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Insight clave 2</h4>
+                        <p style="margin-top: 8px;"><strong>La fuga de datos y el overfitting son los enemigos silenciosos</strong> que explican por que el 85% de proyectos de IA no entregan resultados esperados.</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>Insight clave 3</h4>
+                        <p style="margin-top: 8px;"><strong>La evaluacion rigurosa sera obligacion legal</strong> en Costa Rica con la ENIA y el Proyecto de Ley 23097. Es una competencia de empleabilidad.</p>
+                    </div>
+                </div>
+
+                <div class="content-box" style="margin-top: 15px;">
+                    <h3>Lo que dominan ahora</h3>
+                    <ul>
+                        <li><strong>Metricas de clasificacion:</strong> matriz de confusion, precision, recall, F1-score, AUC-ROC y cuando usar cada una</li>
+                        <li><strong>Metricas de regresion:</strong> MSE, RMSE, MAE, R-cuadrado y sus diferencias practicas</li>
+                        <li><strong>Division de datos:</strong> train/validation/test, proporciones recomendadas y errores comunes</li>
+                        <li><strong>Validacion cruzada:</strong> k-fold, stratified, temporal y anidada</li>
+                        <li><strong>Overfitting y underfitting:</strong> deteccion, prevencion y casos reales de fracaso</li>
+                        <li><strong>Herramientas interactivas:</strong> plataformas web para calcular y visualizar metricas</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box" style="margin-top: 15px;">
+                    <p style="text-align: center; font-size: 1.3em;">Ahora aplicaremos todos estos conceptos en un <strong>ejercicio practico grupal</strong> donde evaluaran modelos reales y tomaran decisiones de negocio basadas en metricas.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">&larr; Anterior</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Siguiente &rarr;</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
